@@ -14,7 +14,7 @@ Este es el repositorio del *Grupo 2*, cuyos integrantes son:
 
 > Obtener enlace desde el home de la wiki del repo.
 
-Puede acceder a la Wiki mediante el siguiente [enlace](https://gitlab.inf.utfsm.cl/)
+Puede acceder a la Wiki mediante el siguiente [enlace](https://gitlab.inf.utfsm.cl/inf236-2026-1/inf236-sj-02/-/wikis/Wiki-Grupo-02)
 
 ## Videos
 
