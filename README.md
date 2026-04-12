@@ -8,7 +8,7 @@ Este es el repositorio del *Grupo 2*, cuyos integrantes son:
 * Oscar Sebastián Acosta Cardenas - 202373511-6
 * Isidora Belén Riquelme Lemunao - 202304680-9
 * Ariadna Andreina Marquez Gonzalez - 202373527-2
-* **Tutor**: Nombre Tutor
+* **Tutor**: Javiera  Osorio
 
 ## Wiki
 
