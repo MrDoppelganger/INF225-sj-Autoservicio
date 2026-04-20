@@ -11,6 +11,7 @@ export const Login = () => {
 
   return (
     <div className="modern-layout">
+      {/* Header flotante estilo Glassmorphism */}
       <header className="site-header">
         <div className="header-container">
           <div className="brand-area">
@@ -21,8 +22,8 @@ export const Login = () => {
               />
             </div>
             <div className="brand-text">
-              <span className="brand-title">UNIVERSIDAD TECNICA</span>
-              <span className="brand-subtitle">FEDERICO SANTA MARIA</span>
+              <span className="brand-title">UNIVERSIDAD TÉCNICA</span>
+              <span className="brand-subtitle">FEDERICO SANTA MARÍA</span>
             </div>
           </div>
           <nav className="header-nav">
@@ -32,71 +33,75 @@ export const Login = () => {
         </div>
       </header>
 
+      {/* Split Screen a pantalla completa */}
       <main className="hero-container">
         <div className="hero-content">
-          <span className="pill-badge">AUTOSERVICIO INSTITUCIONAL</span>
-          <h1 className="hero-title">
-            Portal de <br />
-            <span className="text-highlight">autoservicio</span>
-          </h1>
-          <p className="hero-description">
-            Gestiona tu información académica de forma rápida y segura. Ingresa tus credenciales para acceder a la plataforma.
-          </p>
+          <div className="content-wrapper">
+            <span className="pill-badge">AUTOSERVICIO INSTITUCIONAL</span>
+            <h1 className="hero-title">
+              Portal de <br />
+              <span className="text-gradient">autoservicio</span>
+            </h1>
+            <p className="hero-description">
+              Gestiona tu información académica de forma rápida y segura. Ingresa tus credenciales para acceder a la plataforma.
+            </p>
 
-          <form onSubmit={handleSubmit} className="clean-form">
-            <div className="input-row">
-              <label htmlFor="rut">RUT</label>
-              <input
-                type="text"
-                id="rut"
-                value={rut}
-                onChange={(e) => setRut(e.target.value)}
-                placeholder="12.345.678-9"
-                required
-              />
-            </div>
-            <div className="input-row">
-              <label htmlFor="password">Contraseña</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-              />
-            </div>
-            <div className="form-actions">
-              <button type="submit" className="btn-primary">
-                Iniciar Sesión
-              </button>
-              <a href="#" className="forgot-link">¿Olvidaste tu contraseña?</a>
-            </div>
-          </form>
+            <form onSubmit={handleSubmit} className="clean-form">
+              <div className="input-row">
+                <label htmlFor="rut">RUT</label>
+                <input
+                  type="text"
+                  id="rut"
+                  value={rut}
+                  onChange={(e) => setRut(e.target.value)}
+                  placeholder="12.345.678-9"
+                  required
+                />
+              </div>
+              <div className="input-row">
+                <label htmlFor="password">Contraseña</label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+              <div className="form-actions">
+                <button type="submit" className="btn-primary">
+                  Iniciar Sesión
+                </button>
+                <a href="#" className="forgot-link">¿Olvidaste tu contraseña?</a>
+              </div>
+            </form>
+          </div>
         </div>
 
         <div className="hero-image-wrapper">
           <img 
-            src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
-            alt="Estudiantes" 
+            src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
+            alt="Campus USM" 
             className="hero-image"
           />
         </div>
       </main>
 
+      {/* Tarjetas informativas con diseño limpio */}
       <section className="info-cards-section">
         <div className="cards-grid">
           <div className="info-card">
-            <h3>Acceso con cuenta Institucional</h3>
-            <p>Si cuentas con tu correo institucional, puedes acceder a nuestros servicios aquí.</p>
+            <h3>Cuenta Institucional</h3>
+            <p>Accede con tu correo universitario para gestionar asignaturas y certificados.</p>
           </div>
           <div className="info-card">
-            <h3>Acceso para alumnos nuevos</h3>
-            <p>Si eres un postulante aceptado en la USM, puedes iniciar tu proceso de matrícula aquí.</p>
+            <h3>Alumnos Nuevos</h3>
+            <p>Postulantes aceptados en la USM pueden iniciar su proceso de matrícula oficial aquí.</p>
           </div>
           <div className="info-card">
-            <h3>Acceso para exalumnos e invitados</h3>
-            <p>Si cuentas con una clave de acceso personal puedes ingresar a nuestros servicios aquí.</p>
+            <h3>Exalumnos e Invitados</h3>
+            <p>Ingresa con tu clave de acceso personal para revisar historial e información pública.</p>
           </div>
         </div>
       </section>
