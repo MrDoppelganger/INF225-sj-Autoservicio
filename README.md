@@ -20,4 +20,4 @@ Puede acceder a la Wiki mediante el siguiente [enlace](https://gitlab.inf.utfsm.
 
 ## Aspectos técnicos relevantes
 
-Para levantar la página se debe iniciar una consola en la raiz del proyecto, tener docker abierto y ejecutar: **\docker-compose up --build'** y esperar a que se abra tanto el backend como el frontend, una vez se abra simplemente entrar al link del localhost.
+Para levantar la página se debe iniciar una consola en la raiz del proyecto, tener docker abierto y ejecutar: **docker-compose up --build** y esperar a que se abra tanto el backend como el frontend, una vez se abra simplemente entrar al link del localhost.
