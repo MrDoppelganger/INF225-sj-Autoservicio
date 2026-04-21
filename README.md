@@ -1,5 +1,3 @@
-> Notar que **X** corresponde al número del grupo asignado.
-
 # Grupo 2
 
 Este es el repositorio del *Grupo 2*, cuyos integrantes son:
@@ -12,13 +10,9 @@ Este es el repositorio del *Grupo 2*, cuyos integrantes son:
 
 ## Wiki
 
-> Obtener enlace desde el home de la wiki del repo.
-
 Puede acceder a la Wiki mediante el siguiente [enlace](https://gitlab.inf.utfsm.cl/inf236-2026-1/inf236-sj-02/-/wikis/Wiki-Grupo-02)
 
 ## Videos
-
-> Reemplazar con los enlaces correspondientes
 
 * [Video presentación cliente](https://www.youtube.com)
 * [Video presentación avance 1](https://www.youtube.com/)
