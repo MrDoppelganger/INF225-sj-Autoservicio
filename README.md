@@ -14,9 +14,8 @@ Puede acceder a la Wiki mediante el siguiente [enlace](https://gitlab.inf.utfsm.
 
 ## Videos
 
-* [Video presentación cliente](https://www.youtube.com)
-* [Video presentación avance 1](https://www.youtube.com/)
-* Etc ...
+* [Evidencia de avance de código IINF236 | Gestión de Acceso y Sesión Unificada](https://youtu.be/nle3hsQuJ-g)
+
 
 ## Aspectos técnicos relevantes
 
