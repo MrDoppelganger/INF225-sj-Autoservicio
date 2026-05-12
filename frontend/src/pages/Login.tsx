@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import logoUsm from '../assets/logo_usm.png';
 
 export const Login = () => {
   const [rut, setRut] = useState('');
@@ -53,7 +54,8 @@ export const Login = () => {
 
   return (
     <div>
-      <h1>Inicio de Sesión</h1>
+      <img src={logoUsm} alt="Logo Universidad" className="logo-img" />
+      <p>Acceso a Portal de Autoservicio Institucional</p>
       
       {mensajeExito && <div style={{ color: 'green' }}>{mensajeExito}</div>}
       {error && <div style={{ color: 'red' }}>{error}</div>}
