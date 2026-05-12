@@ -35,7 +35,7 @@ app.get('/api/usuario/info/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(
-      'SELECT rut, nombre, perfil, email, telefono, direccion FROM usuarios WHERE id = $1',
+      'SELECT rut, nombre, perfil, carrera, situacion_academica, email, email_personal, email_apoderado, telefono, direccion FROM usuarios WHERE id = $1',
       [id]
     );
     res.json(result.rows[0]);

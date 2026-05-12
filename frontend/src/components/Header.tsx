@@ -27,10 +27,8 @@ export const Header = ({ setVista, perfil }: HeaderProps) => {
         </svg>
       </button>
       
-      {/* Contenedor de enlaces con clase dinámica */}
       <nav className={`navbar-links ${menuAbierto ? 'abierto' : ''}`}>
-        <button onClick={() => handleNavegacion('info')}>Información Personal</button>
-        <button onClick={() => handleNavegacion('bancario')}>Datos Bancarios</button>
+        <button onClick={() => handleNavegacion('info')}>Mi Perfil</button>
         {(perfil === 'Estudiante Regular' || perfil === 'Alumno Nuevo') && (
           <button onClick={() => handleNavegacion('pagos')}>Pago de Aranceles</button>
         )}
