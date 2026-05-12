@@ -47,8 +47,6 @@ export const InformacionPersonal = ({ userId, setVista }: { userId: number, setV
 
         {/* Separador Visual */}
         <hr className="section-divider" style={{ margin: '40px 0', border: 'none', borderTop: '1px solid #ccc' }} />
-
-        {/* AQUÍ INYECTAMOS EL COMPONENTE BANCARIO */}
         <PerfilBancario userId={userId} />
 
       </main>
