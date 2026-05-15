@@ -15,7 +15,7 @@ Puede acceder a la Wiki mediante el siguiente [enlace](https://gitlab.inf.utfsm.
 ## Videos
 
 * [Evidencia de avance de código INF236 | Gestión de Acceso y Sesión Unificada](https://youtu.be/nle3hsQuJ-g)
-
+* [Prototipo | Hito 3](https://youtu.be/r0ktqbcTGLI)
 
 ## Aspectos técnicos relevantes
 
