@@ -9,6 +9,7 @@ interface PagoArancelProps {
 interface HistorialPago {
   fecha: string;
   monto: string | number;
+  mes_referencia?: string; // Lo mantenemos opcional para saber si pagó un período
 }
 
 export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
@@ -19,6 +20,10 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
   
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [showHistorialModal, setShowHistorialModal] = useState(false);
+
+  // Estados para el pago por período en el modal
+  const [mesInicio, setMesInicio] = useState('Marzo');
+  const [mesFin, setMesFin] = useState('Julio');
 
   const mesesAcademicos = ['Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
@@ -42,18 +47,23 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
   const esMontoValido = typeof montoAbono === 'number' && montoAbono > 0 && montoAbono <= finanzas.saldo_neto;
   const cuotaSugerida = finanzas.saldo_neto > 0 ? Math.ceil(finanzas.saldo_neto / 10) : 0;
 
-  const procesarPago = async (montoAPagar: number) => {
+  // Actualizamos procesarPago para que pueda recibir opcionalmente la referencia del período
+  const procesarPago = async (montoAPagar: number, referencia?: string) => {
     if (montoAPagar <= 0 || montoAPagar > finanzas.saldo_neto) return;
     
     try {
       const res = await fetch('http://localhost:3000/api/finanzas/pago', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_estudiante: userId, monto_abono: montoAPagar })
+        body: JSON.stringify({ 
+          id_estudiante: userId, 
+          monto_abono: montoAPagar,
+          ...(referencia && { mes_referencia: referencia }) // Solo se envía si existe
+        })
       });
       
       if (res.ok) {
-        alert(`Pago de $${montoAPagar} procesado con éxito.`);
+        alert(`Pago de $${montoAPagar.toLocaleString()} procesado con éxito.`);
         setMontoAbono('');
         setShowPlanModal(false);
         cargarDatos(); 
@@ -62,6 +72,12 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
       alert('Error al conectar con la pasarela de pago');
     }
   };
+
+  // Cálculo de la cantidad de meses seleccionados para el período
+  const idxInicio = mesesAcademicos.indexOf(mesInicio);
+  const idxFin = mesesAcademicos.indexOf(mesFin);
+  const cantidadMesesPeriodo = idxFin - idxInicio + 1;
+  const montoPeriodoSugerido = cantidadMesesPeriodo > 0 ? cuotaSugerida * cantidadMesesPeriodo : 0;
 
   const perfilGuardado = localStorage.getItem('user');
   const tipoPerfil = perfilGuardado ? JSON.parse(perfilGuardado).perfil : '';
@@ -110,7 +126,7 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
           <div className="panel-formulario">
             <h3>Realizar Abono Personalizado</h3>
             <div className="form-group">
-              <label>Monto a abonar:</label>
+              <label>Monto a abonar (Abono Global):</label>
               <input 
                 type="number" 
                 className="input-monto"
@@ -121,6 +137,7 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
             </div>
             <button 
               className={`btn-pagar ${esMontoValido ? 'valido' : 'invalido'}`}
+              // Al no enviarle "referencia", se asume que es un abono general al saldo_neto
               onClick={() => procesarPago(Number(montoAbono))} 
               disabled={!esMontoValido}
             >
@@ -139,6 +156,36 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
               
               <div className="modal-body">
                 <p className="texto-sugerencia">Basado en los meses académicos restantes para saldar tu deuda de <strong>${finanzas.saldo_neto.toLocaleString()}</strong>.</p>
+                
+                {/* --- NUEVA SECCIÓN: PAGO POR PERÍODO --- */}
+                <div className="panel-periodo" style={{ background: '#f8f9fa', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
+                  <h4 style={{ marginTop: 0 }}>Pagar cuotas por Período</h4>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '10px' }}>
+                    <select value={mesInicio} onChange={e => setMesInicio(e.target.value)} style={{ padding: '5px' }}>
+                      {mesesAcademicos.map(m => <option key={`ini-${m}`} value={m}>{m}</option>)}
+                    </select>
+                    <span>hasta</span>
+                    <select value={mesFin} onChange={e => setMesFin(e.target.value)} style={{ padding: '5px' }}>
+                      {mesesAcademicos.map(m => <option key={`fin-${m}`} value={m}>{m}</option>)}
+                    </select>
+                  </div>
+                  
+                  {cantidadMesesPeriodo > 0 ? (
+                    <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <p style={{ margin: 0 }}>Monto sugerido ({cantidadMesesPeriodo} meses): <strong>${montoPeriodoSugerido.toLocaleString()}</strong></p>
+                      <button 
+                        className="btn-pago-cuota" 
+                        onClick={() => procesarPago(montoPeriodoSugerido, `${mesInicio}-${mesFin}`)}
+                      >
+                        Pagar Período
+                      </button>
+                    </div>
+                  ) : (
+                    <p style={{ color: 'red', marginTop: '10px', fontSize: '0.9em' }}>El mes de término debe ser posterior o igual al mes de inicio.</p>
+                  )}
+                </div>
+                {/* --- FIN SECCIÓN PERÍODO --- */}
+
                 <div className="tabla-scroll-container">
                   <table className="tabla-modal">
                     <thead>
@@ -154,7 +201,7 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
                           <td>{mes}</td>
                           <td>${cuotaSugerida.toLocaleString()}</td>
                           <td>
-                            <button className="btn-pago-cuota" onClick={() => procesarPago(cuotaSugerida)}>Pagar Mes</button>
+                            <button className="btn-pago-cuota" onClick={() => procesarPago(cuotaSugerida, mes)}>Pagar Mes</button>
                           </td>
                         </tr>
                       ))}
@@ -193,7 +240,11 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
                       <tbody>
                         {historial.map((pago, index) => (
                           <tr key={index}>
-                            <td>{new Date(pago.fecha).toLocaleDateString()}</td>
+                            {/* Mostramos opcionalmente a qué mes/período correspondió, si es que aplica */}
+                            <td>
+                              {new Date(pago.fecha).toLocaleDateString()}{' '}
+                              {pago.mes_referencia ? <span style={{ fontSize: '0.85em', color: '#666' }}>({pago.mes_referencia})</span> : ''}
+                            </td>
                             <td className="monto-positivo">+ ${Number(pago.monto).toLocaleString()}</td>
                           </tr>
                         ))}

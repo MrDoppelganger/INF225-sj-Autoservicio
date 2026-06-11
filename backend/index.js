@@ -18,7 +18,7 @@ app.post('/api/login', async (req, res) => {
   const { rut, password } = req.body;
   try {
     const result = await pool.query(
-      'SELECT id, rut, perfil, nombre FROM usuarios WHERE rut = $1 AND password = $2',
+      'SELECT id, rut, perfil, nombre, situacion_academica FROM usuarios WHERE rut = $1 AND password = $2',
       [rut, password]
     );
     if (result.rows.length > 0) {

@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS pagos (
     id SERIAL PRIMARY KEY,
     id_estudiante INTEGER REFERENCES usuarios(id),
     monto NUMERIC(10, 2) NOT NULL,
+    mes_referencia VARCHAR(50),
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -43,3 +44,32 @@ VALUES (1, 3500000, 1500000, 2000000);
 
 INSERT INTO pagos (id_estudiante, monto) 
 VALUES (1, 500000);
+
+
+
+INSERT INTO usuarios (rut, password, perfil, nombre, carrera, situacion_academica, email, email_personal, telefono, direccion) 
+VALUES ('22222222-2', '1234', 'Exalumno', 'Ana Titulada', 'Arquitectura', 'Titulado', 'ana.titulada@usm.cl', 'ana.t@gmail.com', '+56 9 2222 2222', 'Av. Valparaíso 123');
+
+-- Le creamos un estado de cuenta con saldo_neto = 0
+INSERT INTO cuenta_estudiante (id_estudiante, arancel_bruto, beneficios_validados, saldo_neto) 
+VALUES (
+    (SELECT id FROM usuarios WHERE rut = '22222222-2'), 
+    3000000, 
+    3000000, 
+    0 
+);
+
+
+
+
+INSERT INTO usuarios (rut, password, perfil, nombre, carrera, situacion_academica, email, email_personal, telefono, direccion) 
+VALUES ('33333333-3', '1234', 'Exalumno', 'Carlos Retirado', 'Ingeniería Civil', 'Retirado', 'carlos.retirado@usm.cl', 'carlos.r@gmail.com', '+56 9 3333 3333', 'Av. España 456');
+
+-- Le creamos un estado de cuenta con una deuda pendiente (saldo_neto > 0)
+INSERT INTO cuenta_estudiante (id_estudiante, arancel_bruto, beneficios_validados, saldo_neto) 
+VALUES (
+    (SELECT id FROM usuarios WHERE rut = '33333333-3'), 
+    3500000, 
+    0, 
+    150000  
+);

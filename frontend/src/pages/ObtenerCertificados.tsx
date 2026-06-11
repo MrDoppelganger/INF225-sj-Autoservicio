@@ -1,34 +1,56 @@
 import { Header } from '../components/Header';
 import { useNavigate } from 'react-router-dom';
 
-export const ObtenerCertificados = ({ userId, setVista }: { userId?: number, setVista?: (v: string) => void }) => {
+// Cambiamos userId por user completo para tener acceso a su perfil y situación académica
+export const ObtenerCertificados = ({ user, setVista }: { user: any, setVista?: (v: string) => void }) => {
   const navigate = useNavigate();
 
-  // Función de navegación de emergencia si se accede por URL directa
   const handleBack = (vista: string) => {
     if (setVista) {
       setVista(vista);
     } else {
-      navigate('/dashboard'); // Si entramos directo, el logo nos manda al dashboard
+      navigate('/dashboard'); 
     }
   };
 
-  const certificadosDisponibles = [
-    { id: 1, nombre: 'Certificado de Alumno Regular', costo: 'Gratis' },
-    { id: 2, nombre: 'Certificado de Matrícula', costo: 'Gratis' },
-    { id: 3, nombre: 'Concentración de Notas', costo: '$3.500' },
-    { id: 4, nombre: 'Certificado de Titulo', costo: '$5.000' }
-  ];
+  // Lógica de negocio: Distinción según perfil y situación académica
+  const obtenerListaCertificados = () => {
+    const listaBase = [];
+
+    if (user.perfil === 'Estudiante Regular' || user.perfil === 'Alumno Nuevo') {
+      listaBase.push({ id: 1, nombre: 'Certificado de Alumno Regular', costo: 'Gratis' });
+      listaBase.push({ id: 2, nombre: 'Certificado de Matrícula', costo: 'Gratis' });
+      listaBase.push({ id: 3, nombre: 'Concentración de Notas', costo: '$3.500' });
+    } else if (user.perfil === 'Exalumno') {
+      // Todos los exalumnos pueden sacar notas y asignaturas
+      listaBase.push({ id: 3, nombre: 'Concentración de Notas', costo: '$3.500' });
+      listaBase.push({ id: 5, nombre: 'Certificado de Asignaturas Aprobadas', costo: '$3.500' });
+
+      // Solo si el exalumno está titulado (sin deudas de deserción), puede pedir el título
+      if (user.situacion_academica === 'Titulado') {
+        listaBase.push({ id: 4, nombre: 'Certificado de Título', costo: '$5.000' });
+      }
+    }
+
+    return listaBase;
+  };
+
+  const certificadosDisponibles = obtenerListaCertificados();
 
   return (
     <div className="layout-principal">
-      {/* Pasamos la función manejadora para que el Header no rompa la navegación */}
-      <Header setVista={handleBack} perfil="Estudiante Regular" />
+      <Header setVista={handleBack} perfil={user.perfil} />
 
       <main className="main-content" style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
         <section className="modulo-header">
           <h2>Módulo: Obtención de Certificados</h2>
-          <p style={{ color: '#666' }}>Esta es una vista previa de la funcionalidad planificada para el Hito 4.</p>
+          
+          {/* Mensaje visual si es un Exalumno retirado (Con deudas/No titulado) */}
+          {user.perfil === 'Exalumno' && user.situacion_academica !== 'Titulado' && (
+            <div style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '15px', borderRadius: '5px', marginTop: '15px', border: '1px solid #ffeeba' }}>
+              <strong>Aviso:</strong> La opción para solicitar el Certificado de Título se encuentra deshabilitada debido a que registra pagos pendientes históricos o no ha finalizado su proceso. Aún puede emitir sus certificados generales.
+            </div>
+          )}
         </section>
 
         <section className="lista-certificados" style={{ marginTop: '30px' }}>
@@ -46,12 +68,17 @@ export const ObtenerCertificados = ({ userId, setVista }: { userId?: number, set
                   <td style={{ padding: '12px' }}>{cert.nombre}</td>
                   <td style={{ padding: '12px' }}>{cert.costo}</td>
                   <td style={{ padding: '12px' }}>
-                    <button onClick={() => alert('Próximamente disponible')} style={{ cursor: 'pointer' }}>
+                    <button onClick={() => alert('Próximamente disponible')} style={{ cursor: 'pointer', padding: '5px 10px' }}>
                       Solicitar
                     </button>
                   </td>
                 </tr>
               ))}
+              {certificadosDisponibles.length === 0 && (
+                <tr>
+                  <td colSpan={3} style={{ padding: '12px', textAlign: 'center' }}>No hay certificados disponibles para este perfil.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </section>

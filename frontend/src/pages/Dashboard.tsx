@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PagoArancel } from './PagoArancel';
 import { InformacionPersonal } from './InformacionPersonal';
+// 1. IMPORTAR EL COMPONENTE DE CERTIFICADOS
+import { ObtenerCertificados } from './ObtenerCertificados'; 
 import logoUsm from '../assets/logo_usm.png';
 
 export const Dashboard = () => {
-const [user, setUser] = useState<{ id: number; rut: string; perfil: string; nombre: string } | null>(null);
+  // Asegúrate de que el tipo del state contenga situacion_academica
+  const [user, setUser] = useState<{ id: number; rut: string; perfil: string; nombre: string; situacion_academica?: string } | null>(null);
   const [vistaActual, setVistaActual] = useState<string>(() => {
     return localStorage.getItem('vistaDashboard') || 'landing';
   });
@@ -33,8 +36,10 @@ const [user, setUser] = useState<{ id: number; rut: string; perfil: string; nomb
 
   if (!user) return null;
 
+  // 2. AGREGAR LA CONDICIÓN PARA RENDERIZAR LA VISTA (Nota que le pasamos el "user" completo)
   if (vistaActual === 'info') return <InformacionPersonal userId={user.id} setVista={setVistaActual} />;
   if (vistaActual === 'pagos') return <PagoArancel userId={user.id} setVista={setVistaActual} />;
+  if (vistaActual === 'certificados') return <ObtenerCertificados user={user} setVista={setVistaActual} />;
 
   return (
     <div className="landing-container">
@@ -43,7 +48,6 @@ const [user, setUser] = useState<{ id: number; rut: string; perfil: string; nomb
           <img src={logoUsm} alt="Logo Universidad" className="logo-img" />
           <p>Bienvenido, <strong>{user.nombre}</strong> al Portal de Autoservicio Institucional</p>
           <p>Tipo de Usuario: <strong>{user.perfil}</strong></p>
-          
         </div>
         <button className="btn-logout" style={{ cursor: 'pointer' }} onClick={handleLogout}>
           Cerrar Sesión
@@ -58,10 +62,16 @@ const [user, setUser] = useState<{ id: number; rut: string; perfil: string; nomb
 
         {(user.perfil === 'Estudiante Regular' || user.perfil === 'Alumno Nuevo') && (
           <div className="card-modulo" onClick={() => setVistaActual('pagos')} style={{ cursor: 'pointer', border: '1px solid #ccc', padding: '20px' }}>
-            <h3>Pagos y Aranceles</h3>
-            <p>Estado de cuenta, beneficios y abonos en línea.</p>
+            <h3>Pago de Arancel</h3>
+            <p>Revisa tu estado de cuenta y realiza abonos.</p>
           </div>
         )}
+
+        {/* 3. AGREGAR LA TARJETA DE CERTIFICADOS (Visible para todos, pero adentro cambia su contenido) */}
+        <div className="card-modulo" onClick={() => setVistaActual('certificados')} style={{ cursor: 'pointer', border: '1px solid #ccc', padding: '20px' }}>
+          <h3>Obtener Certificados</h3>
+          <p>Solicita y descarga tus certificados académicos, de alumno regular o título universitario.</p>
+        </div>
       </main>
     </div>
   );
