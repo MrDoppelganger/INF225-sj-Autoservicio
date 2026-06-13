@@ -73,3 +73,44 @@ VALUES (
     0, 
     150000  
 );
+
+-- =========================================================================
+-- TABLA DE CONSULTAS (Módulo Administrador)
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS consultas (
+    id SERIAL PRIMARY KEY,
+    id_usuario INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+    asunto VARCHAR(255) NOT NULL,
+    mensaje TEXT NOT NULL,
+    estado VARCHAR(50) DEFAULT 'Pendiente', -- 'Pendiente' o 'Respondida'
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+-- =========================================================================
+-- 3. USUARIO ADMINISTRADOR DE PRUEBAS
+-- Escenario: Cuenta con rol administrativo para gestionar consultas académicas.
+-- =========================================================================
+INSERT INTO usuarios (rut, password, perfil, nombre, carrera, situacion_academica, email) 
+VALUES (
+    '99999999-9', 
+    'admin123', 
+    'Administrador', 
+    'Profesor Administrador', 
+    'Casa Central', 
+    'Activo', 
+    'admin.autoservicio@usm.cl'
+)
+ON CONFLICT (rut) DO NOTHING;
+
+
+
+-- DATOS DE PRUEBA (Para validar el orden cronológico del CA 1)
+-- Consulta 1: La más antigua (10 de Junio)
+INSERT INTO consultas (id_usuario, asunto, mensaje, fecha)
+VALUES (1, 'Problema carga de notas', 'Hola, no puedo visualizar mis calificaciones en Aula desde SIGA.', '2026-06-10 09:15:00');
+
+-- Consulta 2: La más reciente (11 de Junio)
+INSERT INTO consultas (id_usuario, asunto, mensaje, fecha)
+VALUES (1, 'Desfase validación CAE', 'Estimados, ingresé mi pagaré del CAE pero mi saldo neto no disminuye.', '2026-06-11 14:30:00');

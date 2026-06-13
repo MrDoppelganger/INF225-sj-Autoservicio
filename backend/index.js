@@ -116,3 +116,30 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Backend corriendo en el puerto ${PORT}`);
 });
+
+
+
+// Endpoint para la bandeja centralizada del Administrador
+app.get('/api/admin/consultas/pendientes', async (req, res) => {
+  try {
+    const queryText = `
+      SELECT 
+        c.id, 
+        c.fecha, 
+        c.asunto, 
+        c.mensaje, 
+        u.nombre, -- Tu tabla maneja el nombre completo aquí
+        u.email AS correo_institucional
+      FROM consultas c
+      JOIN usuarios u ON c.id_usuario = u.id
+      WHERE c.estado = 'Pendiente'
+      ORDER BY c.fecha ASC; -- CA 1: Orden cronológico de antigua a reciente
+    `;
+    
+    const result = await pool.query(queryText);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener la bandeja de consultas pendientes" });
+  }
+});

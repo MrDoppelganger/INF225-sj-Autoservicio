@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Header } from '../components/Header';
 import { useNavigate } from 'react-router-dom';
 
-// Cambiamos userId por user completo para tener acceso a su perfil y situación académica
 export const ObtenerCertificados = ({ user, setVista }: { user: any, setVista?: (v: string) => void }) => {
   const navigate = useNavigate();
+  // 1. CREAMOS EL ESTADO PARA CONTROLAR EL POP-UP
+  const [mensajePopup, setMensajePopup] = useState<string>('');
 
   const handleBack = (vista: string) => {
     if (setVista) {
@@ -13,7 +15,6 @@ export const ObtenerCertificados = ({ user, setVista }: { user: any, setVista?: 
     }
   };
 
-  // Lógica de negocio: Distinción según perfil y situación académica
   const obtenerListaCertificados = () => {
     const listaBase = [];
 
@@ -22,11 +23,9 @@ export const ObtenerCertificados = ({ user, setVista }: { user: any, setVista?: 
       listaBase.push({ id: 2, nombre: 'Certificado de Matrícula', costo: 'Gratis' });
       listaBase.push({ id: 3, nombre: 'Concentración de Notas', costo: '$3.500' });
     } else if (user.perfil === 'Exalumno') {
-      // Todos los exalumnos pueden sacar notas y asignaturas
       listaBase.push({ id: 3, nombre: 'Concentración de Notas', costo: '$3.500' });
       listaBase.push({ id: 5, nombre: 'Certificado de Asignaturas Aprobadas', costo: '$3.500' });
 
-      // Solo si el exalumno está titulado (sin deudas de deserción), puede pedir el título
       if (user.situacion_academica === 'Titulado') {
         listaBase.push({ id: 4, nombre: 'Certificado de Título', costo: '$5.000' });
       }
@@ -37,6 +36,17 @@ export const ObtenerCertificados = ({ user, setVista }: { user: any, setVista?: 
 
   const certificadosDisponibles = obtenerListaCertificados();
 
+  // 2. FUNCIÓN PARA MANEJAR EL CLIC EN SOLICITAR
+  const handleSolicitar = (certId: number) => {
+    if (certId === 4) {
+      // Si es el certificado de título, abrimos el Pop-up
+      setMensajePopup('Documento solicitado correctamente y listo para descargar.');
+    } else {
+      // Para los demás, mantenemos un mensaje temporal
+      alert('Esta función estará disponible próximamente para este certificado.');
+    }
+  };
+
   return (
     <div className="layout-principal">
       <Header setVista={handleBack} perfil={user.perfil} />
@@ -45,7 +55,6 @@ export const ObtenerCertificados = ({ user, setVista }: { user: any, setVista?: 
         <section className="modulo-header">
           <h2>Módulo: Obtención de Certificados</h2>
           
-          {/* Mensaje visual si es un Exalumno retirado (Con deudas/No titulado) */}
           {user.perfil === 'Exalumno' && user.situacion_academica !== 'Titulado' && (
             <div style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '15px', borderRadius: '5px', marginTop: '15px', border: '1px solid #ffeeba' }}>
               <strong>Aviso:</strong> La opción para solicitar el Certificado de Título se encuentra deshabilitada debido a que registra pagos pendientes históricos o no ha finalizado su proceso. Aún puede emitir sus certificados generales.
@@ -68,7 +77,11 @@ export const ObtenerCertificados = ({ user, setVista }: { user: any, setVista?: 
                   <td style={{ padding: '12px' }}>{cert.nombre}</td>
                   <td style={{ padding: '12px' }}>{cert.costo}</td>
                   <td style={{ padding: '12px' }}>
-                    <button onClick={() => alert('Próximamente disponible')} style={{ cursor: 'pointer', padding: '5px 10px' }}>
+                    {/* 3. CONECTAMOS EL BOTÓN CON LA FUNCIÓN */}
+                    <button 
+                      onClick={() => handleSolicitar(cert.id)} 
+                      style={{ cursor: 'pointer', padding: '5px 10px', backgroundColor: '#003B70', color: 'white', border: 'none', borderRadius: '4px' }}
+                    >
                       Solicitar
                     </button>
                   </td>
@@ -83,6 +96,35 @@ export const ObtenerCertificados = ({ user, setVista }: { user: any, setVista?: 
           </table>
         </section>
       </main>
+
+      {/* 4. RENDERIZADO CONDICIONAL DEL POP-UP (MODAL) */}
+      {mensajePopup !== '' && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)', 
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white', padding: '30px', borderRadius: '8px',
+            textAlign: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+            maxWidth: '400px'
+          }}>
+            <h3 style={{ color: '#28a745', marginTop: 0 }}>¡Éxito!</h3>
+            <p style={{ fontSize: '16px', lineHeight: '1.5' }}>{mensajePopup}</p>
+            <button 
+              onClick={() => setMensajePopup('')} 
+              style={{
+                marginTop: '20px', padding: '10px 20px', cursor: 'pointer',
+                backgroundColor: '#003B70', color: 'white', border: 'none', borderRadius: '4px',
+                fontWeight: 'bold'
+              }}
+            >
+              Aceptar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

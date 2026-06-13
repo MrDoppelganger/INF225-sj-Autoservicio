@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PagoArancel } from './PagoArancel';
 import { InformacionPersonal } from './InformacionPersonal';
-// 1. IMPORTAR EL COMPONENTE DE CERTIFICADOS
 import { ObtenerCertificados } from './ObtenerCertificados'; 
+// 1. IMPORTAR EL COMPONENTE DE LA BANDEJA DE ADMINISTRADOR
+import { BandejaConsultas } from './BandejaConsultas';
 import logoUsm from '../assets/logo_usm.png';
 
 export const Dashboard = () => {
-  // Asegúrate de que el tipo del state contenga situacion_academica
+  // Se extiende el tipado del state para incluir situacion_academica
   const [user, setUser] = useState<{ id: number; rut: string; perfil: string; nombre: string; situacion_academica?: string } | null>(null);
   const [vistaActual, setVistaActual] = useState<string>(() => {
     return localStorage.getItem('vistaDashboard') || 'landing';
@@ -36,10 +37,12 @@ export const Dashboard = () => {
 
   if (!user) return null;
 
-  // 2. AGREGAR LA CONDICIÓN PARA RENDERIZAR LA VISTA (Nota que le pasamos el "user" completo)
+  // 2. ENRUTAMIENTO CONDICIONAL DE LAS VISTAS DEL COMPONENTE
   if (vistaActual === 'info') return <InformacionPersonal userId={user.id} setVista={setVistaActual} />;
   if (vistaActual === 'pagos') return <PagoArancel userId={user.id} setVista={setVistaActual} />;
   if (vistaActual === 'certificados') return <ObtenerCertificados user={user} setVista={setVistaActual} />;
+  // Vista exclusiva para el Administrador:
+  if (vistaActual === 'admin_bandeja') return <BandejaConsultas user={user} setVista={setVistaActual} />;
 
   return (
     <div className="landing-container">
@@ -55,23 +58,40 @@ export const Dashboard = () => {
       </header>
 
       <main className="landing-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', padding: '20px' }}>
-        <div className="card-modulo" onClick={() => setVistaActual('info')} style={{ cursor: 'pointer', border: '1px solid #ccc', padding: '20px' }}>
-          <h3>Información Personal</h3>
-          <p>Consulta tus datos académicos y gestiona tus datos bancarios.</p>
-        </div>
-
-        {(user.perfil === 'Estudiante Regular' || user.perfil === 'Alumno Nuevo') && (
-          <div className="card-modulo" onClick={() => setVistaActual('pagos')} style={{ cursor: 'pointer', border: '1px solid #ccc', padding: '20px' }}>
-            <h3>Pago de Arancel</h3>
-            <p>Revisa tu estado de cuenta y realiza abonos.</p>
+        
+        {/* 3. CONTROL DE RENDERIZADO DE MÓDULOS DE ACUERDO AL ROL */}
+        {user.perfil === 'Administrador' ? (
+          /* Vista única para cuentas con Perfil Administrativo */
+          <div 
+            className="card-modulo" 
+            onClick={() => setVistaActual('admin_bandeja')} 
+            style={{ cursor: 'pointer', border: '2px solid #003B70', padding: '20px', backgroundColor: '#e6f0fa', gridColumn: '1 / -1' }}
+          >
+            <h3>Bandeja de Consultas Pendientes</h3>
+            <p>Módulo de gestión centralizada. Revisa, prioriza y responde las solicitudes de los alumnos de forma ordenada.</p>
           </div>
+        ) : (
+          /* Vista regular para perfiles de Estudiante o Exalumno */
+          <>
+            <div className="card-modulo" onClick={() => setVistaActual('info')} style={{ cursor: 'pointer', border: '1px solid #ccc', padding: '20px' }}>
+              <h3>Información Personal</h3>
+              <p>Consulta tus datos académicos y gestiona tus datos bancarios.</p>
+            </div>
+
+            {(user.perfil === 'Estudiante Regular' || user.perfil === 'Alumno Nuevo') && (
+              <div className="card-modulo" onClick={() => setVistaActual('pagos')} style={{ cursor: 'pointer', border: '1px solid #ccc', padding: '20px' }}>
+                <h3>Pago de Arancel</h3>
+                <p>Revisa tu estado de cuenta y realiza abonos.</p>
+              </div>
+            )}
+
+            <div className="card-modulo" onClick={() => setVistaActual('certificados')} style={{ cursor: 'pointer', border: '1px solid #ccc', padding: '20px' }}>
+              <h3>Obtener Certificados</h3>
+              <p>Solicita y descarga tus certificados académicos, de alumno regular o título universitario.</p>
+            </div>
+          </>
         )}
 
-        {/* 3. AGREGAR LA TARJETA DE CERTIFICADOS (Visible para todos, pero adentro cambia su contenido) */}
-        <div className="card-modulo" onClick={() => setVistaActual('certificados')} style={{ cursor: 'pointer', border: '1px solid #ccc', padding: '20px' }}>
-          <h3>Obtener Certificados</h3>
-          <p>Solicita y descarga tus certificados académicos, de alumno regular o título universitario.</p>
-        </div>
       </main>
     </div>
   );
