@@ -143,3 +143,17 @@ app.get('/api/admin/consultas/pendientes', async (req, res) => {
     res.status(500).json({ error: "Error al obtener la bandeja de consultas pendientes" });
   }
 });
+
+// Endpoint para obtener la lista de beneficios del estudiante (CA1)
+app.get('/api/beneficios/:id_estudiante', async (req, res) => {
+  try {
+    const { id_estudiante } = req.params;
+    const result = await pool.query(
+      'SELECT id, nombre_beca, monto_cobertura, vigencia FROM beneficios_estudiante WHERE id_estudiante = $1',
+      [id_estudiante]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener beneficios" });
+  }
+});

@@ -10,7 +10,8 @@ interface PagoArancelProps {
 interface HistorialPago {
   fecha: string;
   monto: string | number;
-  mes_referencia?: string; // Lo mantenemos opcional para saber si pagó un período
+  mes_referencia?: string; 
+  emisor?: string; // CA3: Agregamos el origen del abono
 }
 
 export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
@@ -22,7 +23,6 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [showHistorialModal, setShowHistorialModal] = useState(false);
 
-  // Estados para el pago por período en el modal
   const [mesInicio, setMesInicio] = useState('Marzo');
   const [mesFin, setMesFin] = useState('Julio');
 
@@ -48,7 +48,6 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
   const esMontoValido = typeof montoAbono === 'number' && montoAbono > 0 && montoAbono <= finanzas.saldo_neto;
   const cuotaSugerida = finanzas.saldo_neto > 0 ? Math.ceil(finanzas.saldo_neto / 10) : 0;
 
-  // Actualizamos procesarPago para que pueda recibir opcionalmente la referencia del período
   const procesarPago = async (montoAPagar: number, referencia?: string) => {
     if (montoAPagar <= 0 || montoAPagar > finanzas.saldo_neto) return;
     
@@ -59,7 +58,7 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
         body: JSON.stringify({ 
           id_estudiante: userId, 
           monto_abono: montoAPagar,
-          ...(referencia && { mes_referencia: referencia }) // Solo se envía si existe
+          ...(referencia && { mes_referencia: referencia })
         })
       });
       
@@ -74,7 +73,6 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
     }
   };
 
-  // Cálculo de la cantidad de meses seleccionados para el período
   const idxInicio = mesesAcademicos.indexOf(mesInicio);
   const idxFin = mesesAcademicos.indexOf(mesFin);
   const cantidadMesesPeriodo = idxFin - idxInicio + 1;
@@ -145,7 +143,6 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
             </div>
             <button 
               className={`btn-pagar ${esMontoValido ? 'valido' : 'invalido'}`}
-              // Al no enviarle "referencia", se asume que es un abono general al saldo_neto
               onClick={() => procesarPago(Number(montoAbono))} 
               disabled={!esMontoValido}
             >
@@ -165,7 +162,6 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
               <div className="modal-body">
                 <p className="texto-sugerencia">Basado en los meses académicos restantes para saldar tu deuda de <strong>${finanzas.saldo_neto.toLocaleString()}</strong>.</p>
                 
-                {/* --- NUEVA SECCIÓN: PAGO POR PERÍODO (Limpiada de estilos en línea) --- */}
                 <div className="panel-periodo">
                   <h4>Pagar cuotas por Período</h4>
                   <div className="periodo-selectores">
@@ -192,7 +188,6 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
                     <p className="error-periodo">El mes de término debe ser posterior o igual al mes de inicio.</p>
                   )}
                 </div>
-                {/* --- FIN SECCIÓN PERÍODO --- */}
 
                 <div className="tabla-scroll-container">
                   <table className="tabla-modal">
@@ -242,6 +237,7 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
                       <thead>
                         <tr>
                           <th>Fecha del Pago</th>
+                          <th>Emisor / Origen</th> {/* CA3: Columna de Emisor insertada */}
                           <th>Monto Abonado</th>
                         </tr>
                       </thead>
@@ -252,6 +248,8 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
                               {new Date(pago.fecha).toLocaleDateString()}{' '}
                               {pago.mes_referencia && <span className="mes-referencia-historial">({pago.mes_referencia})</span>}
                             </td>
+                            {/* CA3: Mostramos el origen del pago de forma limpia */}
+                            <td style={{ color: '#475569', fontSize: '0.95em' }}>{pago.emisor || 'Abono Estudiante'}</td>
                             <td className="monto-positivo">+ ${Number(pago.monto).toLocaleString()}</td>
                           </tr>
                         ))}

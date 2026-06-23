@@ -1,0 +1,175 @@
+/* Heredamos la estructura base del layout-principal */
+.beneficios-main {
+  max-width: 1000px;
+}
+
+.beneficios-header {
+  margin-bottom: 40px;
+}
+
+.beneficios-header h2 {
+  color: #003B70;
+  font-size: 2rem;
+  margin: 0 0 8px 0;
+}
+
+.beneficios-header p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+/* Grilla interactiva de becas */
+.grid-beneficios {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.tarjeta-beneficio {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 30px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.tarjeta-beneficio:hover {
+  transform: translateY(-5px);
+  border-color: #003B70;
+  box-shadow: 0 12px 20px rgba(0, 59, 112, 0.15);
+}
+
+.tarjeta-icono {
+  width: 50px;
+  height: 50px;
+  background-color: #fffbeb;
+  color: #F1B929;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.tarjeta-icono svg {
+  width: 24px;
+  height: 24px;
+}
+
+.tarjeta-beneficio h3 {
+  color: #003B70;
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.badge-activo {
+  background-color: #def7ec;
+  color: #03543f;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.clic-detalle {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-top: 15px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.tarjeta-beneficio:hover .clic-detalle {
+  color: #003B70;
+}
+
+.tarjeta-vacia {
+  grid-column: 1 / -1;
+  background-color: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  text-align: center;
+  color: #64748b;
+  border: 1px dashed #cbd5e1;
+}
+
+/* Modal de Detalles */
+.pop-up-beneficio {
+  max-width: 450px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.detalle-cobertura {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detalle-cobertura h4 {
+  color: #1e293b;
+  font-size: 1.4rem;
+  margin: 0;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 15px;
+}
+
+.dato-cobertura {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.label-cobertura {
+  font-size: 0.9rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.valor-cobertura {
+  font-size: 1.2rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.monto-verde {
+  color: #059669; /* Verde esmeralda para el monto a favor */
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.alerta-info {
+  background-color: #f8fafc;
+  border-left: 4px solid #003B70;
+  padding: 15px;
+  font-size: 0.9rem;
+  color: #475569;
+  border-radius: 4px;
+  line-height: 1.5;
+  margin-top: 10px;
+}
+
+.btn-aceptar-beneficio {
+  background-color: #F1B929;
+  color: #003B70;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-aceptar-beneficio:hover {
+  background-color: #dca31f;
+}
