@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Header } from '../components/Header';
 import { useNavigate } from 'react-router-dom';
+import '../styles/obtenerCertificados.css';
 
 export const ObtenerCertificados = ({ user, setVista }: { user: any, setVista?: (v: string) => void }) => {
   const navigate = useNavigate();
-  // 1. CREAMOS EL ESTADO PARA CONTROLAR EL POP-UP
   const [mensajePopup, setMensajePopup] = useState<string>('');
 
   const handleBack = (vista: string) => {
@@ -36,13 +36,10 @@ export const ObtenerCertificados = ({ user, setVista }: { user: any, setVista?: 
 
   const certificadosDisponibles = obtenerListaCertificados();
 
-  // 2. FUNCIÓN PARA MANEJAR EL CLIC EN SOLICITAR
   const handleSolicitar = (certId: number) => {
     if (certId === 4) {
-      // Si es el certificado de título, abrimos el Pop-up
       setMensajePopup('Documento solicitado correctamente y listo para descargar.');
     } else {
-      // Para los demás, mantenemos un mensaje temporal
       alert('Esta función estará disponible próximamente para este certificado.');
     }
   };
@@ -51,37 +48,46 @@ export const ObtenerCertificados = ({ user, setVista }: { user: any, setVista?: 
     <div className="layout-principal">
       <Header setVista={handleBack} perfil={user.perfil} />
 
-      <main className="main-content" style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
-        <section className="modulo-header">
+      <main className="main-content cert-main">
+        <section className="cert-header">
           <h2>Módulo: Obtención de Certificados</h2>
+          <p>Solicita y descarga tus documentos académicos oficiales.</p>
           
           {user.perfil === 'Exalumno' && user.situacion_academica !== 'Titulado' && (
-            <div style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '15px', borderRadius: '5px', marginTop: '15px', border: '1px solid #ffeeba' }}>
-              <strong>Aviso:</strong> La opción para solicitar el Certificado de Título se encuentra deshabilitada debido a que registra pagos pendientes históricos o no ha finalizado su proceso. Aún puede emitir sus certificados generales.
+            <div className="alerta-bloqueo">
+              {/* Icono SVG Nativo de Advertencia */}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="alerta-icon">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <div>
+                <strong>Aviso Importante:</strong> La opción para solicitar el Certificado de Título se encuentra deshabilitada debido a que registra pagos pendientes históricos o no ha finalizado su proceso. Aún puede emitir sus certificados generales.
+              </div>
             </div>
           )}
         </section>
 
-        <section className="lista-certificados" style={{ marginTop: '30px' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <section className="lista-certificados-container">
+          <table className="tabla-certificados">
             <thead>
-              <tr style={{ borderBottom: '2px solid #003B70' }}>
-                <th style={{ padding: '12px' }}>Documento</th>
-                <th style={{ padding: '12px' }}>Costo</th>
-                <th style={{ padding: '12px' }}>Acción</th>
+              <tr>
+                <th>Documento</th>
+                <th>Costo</th>
+                <th>Acción</th>
               </tr>
             </thead>
             <tbody>
               {certificadosDisponibles.map((cert) => (
-                <tr key={cert.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '12px' }}>{cert.nombre}</td>
-                  <td style={{ padding: '12px' }}>{cert.costo}</td>
-                  <td style={{ padding: '12px' }}>
-                    {/* 3. CONECTAMOS EL BOTÓN CON LA FUNCIÓN */}
-                    <button 
-                      onClick={() => handleSolicitar(cert.id)} 
-                      style={{ cursor: 'pointer', padding: '5px 10px', backgroundColor: '#003B70', color: 'white', border: 'none', borderRadius: '4px' }}
-                    >
+                <tr key={cert.id}>
+                  <td className="cert-nombre">{cert.nombre}</td>
+                  <td className="cert-costo">
+                    <span className={cert.costo === 'Gratis' ? 'badge-gratis' : 'badge-pago'}>
+                      {cert.costo}
+                    </span>
+                  </td>
+                  <td>
+                    <button className="btn-solicitar" onClick={() => handleSolicitar(cert.id)}>
                       Solicitar
                     </button>
                   </td>
@@ -89,7 +95,7 @@ export const ObtenerCertificados = ({ user, setVista }: { user: any, setVista?: 
               ))}
               {certificadosDisponibles.length === 0 && (
                 <tr>
-                  <td colSpan={3} style={{ padding: '12px', textAlign: 'center' }}>No hay certificados disponibles para este perfil.</td>
+                  <td colSpan={3} className="cert-vacio">No hay certificados disponibles para este perfil.</td>
                 </tr>
               )}
             </tbody>
@@ -97,30 +103,19 @@ export const ObtenerCertificados = ({ user, setVista }: { user: any, setVista?: 
         </section>
       </main>
 
-      {/* 4. RENDERIZADO CONDICIONAL DEL POP-UP (MODAL) */}
+      {/* RENDERIZADO DEL POP-UP (MODAL) */}
       {mensajePopup !== '' && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.6)', 
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: 'white', padding: '30px', borderRadius: '8px',
-            textAlign: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-            maxWidth: '400px'
-          }}>
-            <h3 style={{ color: '#28a745', marginTop: 0 }}>¡Éxito!</h3>
-            <p style={{ fontSize: '16px', lineHeight: '1.5' }}>{mensajePopup}</p>
-            <button 
-              onClick={() => setMensajePopup('')} 
-              style={{
-                marginTop: '20px', padding: '10px 20px', cursor: 'pointer',
-                backgroundColor: '#003B70', color: 'white', border: 'none', borderRadius: '4px',
-                fontWeight: 'bold'
-              }}
-            >
-              Aceptar
+        <div className="modal-overlay">
+          <div className="modal-container pop-up-exito">
+            {/* Icono SVG Nativo de Éxito */}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="exito-icon">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <h3>¡Trámite Exitoso!</h3>
+            <p>{mensajePopup}</p>
+            <button className="btn-aceptar-popup" onClick={() => setMensajePopup('')}>
+              Aceptar y Continuar
             </button>
           </div>
         </div>

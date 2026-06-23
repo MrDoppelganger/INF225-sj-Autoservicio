@@ -1,0 +1,145 @@
+/* Layout base Edge-to-Edge */
+.layout-principal {
+  min-height: 100vh;
+  width: 100vw;
+  background-color: #f4f7f6; /* Mismo gris suave del Dashboard para mantener consistencia */
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* Contenedor centralizado para el contenido */
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Cabecera de la sección */
+.profile-header {
+  margin-bottom: 30px;
+}
+
+.profile-header h2 {
+  color: #003B70; /* Azul USM */
+  font-size: 2rem;
+  margin: 0 0 8px 0;
+}
+
+.profile-header p {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Grilla de datos tipo Tarjeta SaaS */
+.profile-data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  background-color: #ffffff;
+  padding: 35px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  border: 1px solid #e0e0e0;
+}
+
+/* Estructura de cada campo de dato */
+.data-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.data-field.full-width {
+  grid-column: 1 / -1; /* Ocupa toda la fila disponible */
+}
+
+/* Tipografía de las etiquetas (Pequeñas, mayúsculas, sutiles) */
+.label {
+  font-size: 0.85rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* Tipografía de los valores */
+.value {
+  font-size: 1.1rem;
+  color: #333;
+  margin: 0;
+  font-weight: 500;
+  word-wrap: break-word; /* Previene que correos largos rompan la grilla */
+}
+
+.value.highlight {
+  color: #003B70;
+  font-weight: bold;
+}
+
+/* Etiqueta visual para la Situación Académica */
+.status-tag {
+  display: inline-block;
+  padding: 6px 14px;
+  background-color: #e6f0fa; /* Fondo azul clarito */
+  color: #003B70;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  border: 1px solid #cce0f5;
+}
+
+/* Separador elegante entre Información y Perfil Bancario */
+.section-divider {
+  margin: 50px 0;
+  border: none;
+  border-top: 2px dashed #d1d5db; /* Línea punteada moderna en vez de sólida */
+}
+
+/* Pantalla de carga integrada y limpia */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f7f6;
+  color: #003B70;
+  font-weight: bold;
+  font-size: 1.2rem;
+  gap: 15px;
+}
+
+/* Spinner CSS Nativo (sin instalar librerías) */
+.loader-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e6f0fa;
+  border-top: 4px solid #F1B929; /* Color mostaza girando */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsividad estricta para móviles */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 20px 15px;
+  }
+  
+  .profile-data-grid {
+    padding: 20px;
+    gap: 20px;
+  }
+  
+  .profile-header h2 {
+    font-size: 1.6rem;
+  }
+}

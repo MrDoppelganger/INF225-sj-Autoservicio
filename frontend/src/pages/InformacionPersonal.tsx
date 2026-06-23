@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { PerfilBancario } from './PerfilBancario';
+import '../styles/informacionPersonal.css';
 
 export const InformacionPersonal = ({ userId, setVista }: { userId: number, setVista: (v: string) => void }) => {
   const [user, setUser] = useState<any>(null);
@@ -15,6 +16,7 @@ export const InformacionPersonal = ({ userId, setVista }: { userId: number, setV
   if (!user) {
     return (
       <div className="loading-container">
+        <div className="loader-spinner"></div>
         <p>Cargando información institucional...</p>
       </div>
     );
@@ -45,8 +47,9 @@ export const InformacionPersonal = ({ userId, setVista }: { userId: number, setV
           <div className="data-field full-width"><span className="label">Dirección Particular</span><p className="value">{user.direccion}</p></div>
         </section>
 
-        {/* Separador Visual */}
-        <hr className="section-divider" style={{ margin: '40px 0', border: 'none', borderTop: '1px solid #ccc' }} />
+        {/* Separador Visual (Estilos movidos al CSS) */}
+        <hr className="section-divider" />
+        
         <PerfilBancario userId={userId} />
 
       </main>

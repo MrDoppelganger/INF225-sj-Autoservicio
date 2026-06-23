@@ -1,0 +1,238 @@
+/* Layout y Contenedor Principal */
+.layout-principal {
+  min-height: 100vh;
+  width: 100vw;
+  background-color: #f4f7f6;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.cert-main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Cabecera del Módulo */
+.cert-header {
+  margin-bottom: 30px;
+}
+
+.cert-header h2 {
+  color: #003B70;
+  font-size: 2rem;
+  margin: 0 0 8px 0;
+}
+
+.cert-header p {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0 0 20px 0;
+}
+
+/* Banner de Advertencia Moderno */
+.alerta-bloqueo {
+  background-color: #fffbeb; /* Fondo amarillo muy suave */
+  color: #92400e; /* Texto café oscuro para contraste y legibilidad */
+  padding: 16px 20px;
+  border-radius: 8px;
+  border-left: 4px solid #F1B929; /* Línea lateral institucional mostaza */
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.alerta-icon {
+  width: 24px;
+  height: 24px;
+  color: #F1B929;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Tabla de Certificados SaaS */
+.lista-certificados-container {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden; /* Mantiene los bordes redondeados con la tabla adentro */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.tabla-certificados {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tabla-certificados th {
+  background-color: #003B70; /* Azul USM para la cabecera */
+  color: #ffffff;
+  padding: 16px 24px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tabla-certificados td {
+  padding: 16px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.tabla-certificados tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla-certificados tr:hover td {
+  background-color: #f8fafc; /* Efecto hover sutil en la fila entera */
+}
+
+.cert-nombre {
+  color: #1e293b;
+  font-weight: 500;
+  font-size: 1.05rem;
+}
+
+.cert-vacio {
+  text-align: center;
+  color: #64748b;
+  padding: 40px !important;
+  font-style: italic;
+}
+
+/* Badges de Costo (Etiquetas visuales) */
+.badge-gratis {
+  background-color: #def7ec;
+  color: #03543f;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.badge-pago {
+  background-color: #f1f5f9;
+  color: #475569;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  border: 1px solid #e2e8f0;
+}
+
+/* Botón Solicitar */
+.btn-solicitar {
+  background-color: #ffffff;
+  color: #003B70;
+  border: 2px solid #003B70;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-solicitar:hover {
+  background-color: #003B70;
+  color: #ffffff;
+}
+
+/* Modal / Pop-Up de Éxito */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 59, 112, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.pop-up-exito {
+  background-color: #ffffff;
+  padding: 40px 30px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  animation: slideUpFade 0.3s ease-out forwards;
+}
+
+/* Animación sutil de entrada para el Pop-up */
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.exito-icon {
+  width: 60px;
+  height: 60px;
+  color: #059669; /* Verde esmeralda de éxito */
+  margin-bottom: 10px;
+}
+
+.pop-up-exito h3 {
+  color: #1e293b;
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.pop-up-exito p {
+  color: #475569;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  margin: 0 0 15px 0;
+}
+
+.btn-aceptar-popup {
+  background-color: #F1B929; /* Mostaza institucional para cerrar */
+  color: #003B70;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.btn-aceptar-popup:hover {
+  background-color: #dca31f;
+  transform: translateY(-2px);
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .cert-main {
+    padding: 20px 15px;
+  }
+
+  .tabla-certificados th, .tabla-certificados td {
+    padding: 12px 10px;
+    font-size: 0.95rem;
+  }
+
+  .alerta-bloqueo {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}

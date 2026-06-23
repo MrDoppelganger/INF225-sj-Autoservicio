@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logoUsm from '../assets/logo_usm.png';
+import '../styles/login.css';
 
 export const Login = () => {
   const [rut, setRut] = useState('');
@@ -53,36 +54,52 @@ export const Login = () => {
   };
 
   return (
-    <div>
-      <img src={logoUsm} alt="Logo Universidad" className="logo-img" />
-      <p>Acceso a Portal de Autoservicio Institucional</p>
-      
-      {mensajeExito && <div style={{ color: 'green' }}>{mensajeExito}</div>}
-      {error && <div style={{ color: 'red' }}>{error}</div>}
+    <div className="login-container">
+      {/* Mitad Izquierda: Branding Institucional */}
+      <div className="login-brand">
+        <img src={logoUsm} alt="Logo Universidad" className="login-logo-img" />
+        <div className="brand-text">
+          <h1>Portal de Autoservicio</h1>
+          <p>Gestiona tu información académica, certificados y aranceles desde una plataforma centralizada y segura.</p>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>RUT: </label>
-          <input 
-            type="text" 
-            value={rut} 
-            onChange={(e) => setRut(e.target.value)} 
-            required 
-          />
+      {/* Mitad Derecha: Formulario */}
+      <div className="login-form-wrapper">
+        <div className="login-form-content">
+          <h2>Iniciar Sesión</h2>
+          <p className="login-subtitle">Ingresa tus credenciales institucionales</p>
+          
+          {mensajeExito && <div className="alerta-login alerta-exito">{mensajeExito}</div>}
+          {error && <div className="alerta-login alerta-error">{error}</div>}
+
+          <form onSubmit={handleSubmit} className="form-login">
+            <div className="form-group">
+              <label>RUT Institucional</label>
+              <input 
+                type="text" 
+                value={rut} 
+                onChange={(e) => setRut(e.target.value)} 
+                placeholder="Ej: 12345678-9"
+                required 
+              />
+            </div>
+            
+            <div className="form-group">
+              <label>Contraseña</label>
+              <input 
+                type="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                placeholder="Ingresa tu contraseña"
+                required 
+              />
+            </div>
+            
+            <button type="submit" className="btn-login">Ingresar al Portal</button>
+          </form>
         </div>
-        <br />
-        <div>
-          <label>Contraseña: </label>
-          <input 
-            type="password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            required 
-          />
-        </div>
-        <br />
-        <button type="submit">Ingresar</button>
-      </form>
+      </div>
     </div>
   );
 };

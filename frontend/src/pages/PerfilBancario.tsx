@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import '../styles/perfilBancario.css';
 
 export const PerfilBancario = ({ userId }: { userId: number }) => {
   const [datos, setDatos] = useState({ banco: '', tipo_cuenta: '', numero_cuenta: '', rut_titular: '' });
@@ -24,7 +25,6 @@ export const PerfilBancario = ({ userId }: { userId: number }) => {
     const valor = e.target.value;
     setDatos({ ...datos, numero_cuenta: valor });
 
-    // Busca cualquier carácter que NO sea un número del 0 al 9
     const caracterInvalido = valor.match(/[^0-9]/);
     
     if (caracterInvalido) {
@@ -189,7 +189,7 @@ export const PerfilBancario = ({ userId }: { userId: number }) => {
                 />
                
                 {erroresDinamicos.numero_cuenta && (
-                  <span className="error-dinamico" style={{ color: 'red', fontSize: '0.85rem' }}>
+                  <span className="error-dinamico">
                     {erroresDinamicos.numero_cuenta}
                   </span>
                 )}
@@ -206,15 +206,15 @@ export const PerfilBancario = ({ userId }: { userId: number }) => {
                 />
                 
                 {erroresDinamicos.rut_titular && (
-                  <span className="error-dinamico" style={{ color: 'red', fontSize: '0.85rem' }}>
+                  <span className="error-dinamico">
                     {erroresDinamicos.rut_titular}
                   </span>
                 )}
               </div>
 
               <footer className="modal-actions">
-                <button type="button" onClick={() => setIsModalOpen(false)}>Cancelar</button>
-                <button type="submit">Guardar Cambios</button>
+                <button type="button" className="btn-cancelar" onClick={() => setIsModalOpen(false)}>Cancelar</button>
+                <button type="submit" className="btn-guardar">Guardar Cambios</button>
               </footer>
             </form>
           </div>

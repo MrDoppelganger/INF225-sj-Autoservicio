@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
+import '../styles/pagoArancel.css';
 
 interface PagoArancelProps {
   userId: number;
@@ -82,7 +83,14 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
   const perfilGuardado = localStorage.getItem('user');
   const tipoPerfil = perfilGuardado ? JSON.parse(perfilGuardado).perfil : '';
 
-  if (cargando) return <div className="loader">Cargando estado financiero...</div>;
+  if (cargando) {
+    return (
+      <div className="loading-container">
+        <div className="loader-spinner"></div>
+        <p>Cargando estado financiero...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="modulo-contenedor">
@@ -97,7 +105,7 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
         <div className="finanzas-dashboard">
           <div className="tarjetas-resumen">
             <div className="tarjeta base">
-              <span className="tarjeta-titulo">Arancel Anual</span>
+              <span className="tarjeta-titulo">Arancel Anual Bruto</span>
               <span className="tarjeta-monto">${finanzas.arancel_bruto.toLocaleString()}</span>
             </div>
             <div className="tarjeta descuento">
@@ -105,14 +113,14 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
               <span className="tarjeta-monto">-${finanzas.beneficios_validados.toLocaleString()}</span>
             </div>
             <div className="tarjeta total">
-              <span className="tarjeta-titulo">Saldo Pendiente</span>
+              <span className="tarjeta-titulo">Saldo Pendiente Neto</span>
               <span className="tarjeta-monto">${finanzas.saldo_neto.toLocaleString()}</span>
             </div>
           </div>
 
           <div className="acciones-financieras">
             {finanzas.saldo_neto > 0 && (
-              <button className="btn-accion-modal" onClick={() => setShowPlanModal(true)}>
+              <button className="btn-accion-modal primario" onClick={() => setShowPlanModal(true)}>
                 Ver Plan de Pago Sugerido
               </button>
             )}
@@ -148,40 +156,40 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
 
         {showPlanModal && (
           <div className="modal-overlay">
-            <div className="modal-container">
+            <div className="modal-container plan-modal">
               <header className="modal-header">
                 <h3>Plan de Cuotas Sugerido</h3>
-                <button className="btn-cerrar-icono" onClick={() => setShowPlanModal(false)}>X</button>
+                <button className="btn-cerrar-icono" onClick={() => setShowPlanModal(false)}>×</button>
               </header>
               
               <div className="modal-body">
                 <p className="texto-sugerencia">Basado en los meses académicos restantes para saldar tu deuda de <strong>${finanzas.saldo_neto.toLocaleString()}</strong>.</p>
                 
-                {/* --- NUEVA SECCIÓN: PAGO POR PERÍODO --- */}
-                <div className="panel-periodo" style={{ background: '#f8f9fa', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
-                  <h4 style={{ marginTop: 0 }}>Pagar cuotas por Período</h4>
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '10px' }}>
-                    <select value={mesInicio} onChange={e => setMesInicio(e.target.value)} style={{ padding: '5px' }}>
+                {/* --- NUEVA SECCIÓN: PAGO POR PERÍODO (Limpiada de estilos en línea) --- */}
+                <div className="panel-periodo">
+                  <h4>Pagar cuotas por Período</h4>
+                  <div className="periodo-selectores">
+                    <select value={mesInicio} onChange={e => setMesInicio(e.target.value)} className="periodo-select">
                       {mesesAcademicos.map(m => <option key={`ini-${m}`} value={m}>{m}</option>)}
                     </select>
-                    <span>hasta</span>
-                    <select value={mesFin} onChange={e => setMesFin(e.target.value)} style={{ padding: '5px' }}>
+                    <span className="periodo-separador">hasta</span>
+                    <select value={mesFin} onChange={e => setMesFin(e.target.value)} className="periodo-select">
                       {mesesAcademicos.map(m => <option key={`fin-${m}`} value={m}>{m}</option>)}
                     </select>
                   </div>
                   
                   {cantidadMesesPeriodo > 0 ? (
-                    <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <p style={{ margin: 0 }}>Monto sugerido ({cantidadMesesPeriodo} meses): <strong>${montoPeriodoSugerido.toLocaleString()}</strong></p>
+                    <div className="periodo-sugerido">
+                      <p>Monto sugerido ({cantidadMesesPeriodo} meses): <strong>${montoPeriodoSugerido.toLocaleString()}</strong></p>
                       <button 
-                        className="btn-pago-cuota" 
+                        className="btn-pago-cuota destacado" 
                         onClick={() => procesarPago(montoPeriodoSugerido, `${mesInicio}-${mesFin}`)}
                       >
                         Pagar Período
                       </button>
                     </div>
                   ) : (
-                    <p style={{ color: 'red', marginTop: '10px', fontSize: '0.9em' }}>El mes de término debe ser posterior o igual al mes de inicio.</p>
+                    <p className="error-periodo">El mes de término debe ser posterior o igual al mes de inicio.</p>
                   )}
                 </div>
                 {/* --- FIN SECCIÓN PERÍODO --- */}
@@ -199,7 +207,7 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
                       {mesesAcademicos.map((mes, index) => (
                         <tr key={index}>
                           <td>{mes}</td>
-                          <td>${cuotaSugerida.toLocaleString()}</td>
+                          <td className="monto-cuota">${cuotaSugerida.toLocaleString()}</td>
                           <td>
                             <button className="btn-pago-cuota" onClick={() => procesarPago(cuotaSugerida, mes)}>Pagar Mes</button>
                           </td>
@@ -222,7 +230,7 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
             <div className="modal-container">
               <header className="modal-header">
                 <h3>Historial de Pagos Realizados</h3>
-                <button className="btn-cerrar-icono" onClick={() => setShowHistorialModal(false)}>X</button>
+                <button className="btn-cerrar-icono" onClick={() => setShowHistorialModal(false)}>×</button>
               </header>
               
               <div className="modal-body">
@@ -240,10 +248,9 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
                       <tbody>
                         {historial.map((pago, index) => (
                           <tr key={index}>
-                            {/* Mostramos opcionalmente a qué mes/período correspondió, si es que aplica */}
                             <td>
                               {new Date(pago.fecha).toLocaleDateString()}{' '}
-                              {pago.mes_referencia ? <span style={{ fontSize: '0.85em', color: '#666' }}>({pago.mes_referencia})</span> : ''}
+                              {pago.mes_referencia && <span className="mes-referencia-historial">({pago.mes_referencia})</span>}
                             </td>
                             <td className="monto-positivo">+ ${Number(pago.monto).toLocaleString()}</td>
                           </tr>

@@ -1,0 +1,165 @@
+/* Contenedor principal Edge-to-Edge */
+.landing-container {
+  min-height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f7f6;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* Header respetando tu estructura */
+.landing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #003B70;
+  color: #ffffff;
+  padding: 15px 40px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-info p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.logo-img {
+  height: 60px;
+  object-fit: contain;
+}
+
+/* Botón de Logout original (sin icono dentro) */
+.btn-logout {
+  background-color: #F1B929;
+  color: #003B70;
+  border: none;
+  padding: 10px 24px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-logout:hover {
+  background-color: #dca31f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Grilla de módulos */
+.landing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+  padding: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Tarjetas base */
+.card-modulo {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Variante para el Administrador */
+.card-modulo.admin-card {
+  grid-column: 1 / -1;
+  border: 2px solid #003B70;
+  background-color: #e6f0fa;
+}
+
+/* Efectos Hover */
+.card-modulo:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 20px rgba(0, 59, 112, 0.15);
+  border-color: #003B70;
+}
+
+.card-modulo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background-color: #F1B929;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+  transform-origin: left;
+}
+
+.card-modulo:hover::before {
+  transform: scaleX(1);
+}
+
+/* Estilos para los SVGs nativos */
+.card-icon {
+  width: 36px;
+  height: 36px;
+  color: #003B70;
+  margin-bottom: 16px;
+  transition: color 0.3s ease;
+}
+
+.card-modulo:hover .card-icon {
+  color: #F1B929;
+}
+
+/* Tipografía de las tarjetas */
+.card-modulo h3 {
+  color: #003B70;
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.4rem;
+}
+
+.card-modulo p {
+  color: #555;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .landing-header {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+    gap: 15px;
+  }
+  
+  .header-info {
+    flex-direction: column;
+  }
+
+  .landing-grid {
+    padding: 20px;
+    gap: 20px;
+  }
+}
