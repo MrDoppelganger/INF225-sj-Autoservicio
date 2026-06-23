@@ -74,12 +74,25 @@ app.put('/api/perfil/bancario/:id_estudiante', async (req, res) => {
 app.get('/api/finanzas/:id_estudiante', async (req, res) => {
   try {
     const { id_estudiante } = req.params;
+    
+    // 1. Obtener finanzas
     const result = await pool.query(
       'SELECT arancel_bruto, beneficios_validados, saldo_neto FROM cuenta_estudiante WHERE id_estudiante = $1',
       [id_estudiante]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: "Cuenta no encontrada" });
-    res.json(result.rows[0]);
+
+    // 2. Verificar si existen beneficios "Pendientes"
+    const pendientes = await pool.query(
+      "SELECT COUNT(*) FROM beneficios_estudiante WHERE id_estudiante = $1 AND estado = 'Pendiente'",
+      [id_estudiante]
+    );
+    
+    const finanzas = result.rows[0];
+    // Se envía un booleano al frontend
+    finanzas.tiene_pendientes = parseInt(pendientes.rows[0].count) > 0; 
+
+    res.json(finanzas);
   } catch (err) {
     res.status(500).json({ error: "Error al obtener finanzas" });
   }
@@ -149,7 +162,7 @@ app.get('/api/beneficios/:id_estudiante', async (req, res) => {
   try {
     const { id_estudiante } = req.params;
     const result = await pool.query(
-      'SELECT id, nombre_beca, monto_cobertura, vigencia FROM beneficios_estudiante WHERE id_estudiante = $1',
+      'SELECT id, nombre_beca, monto_cobertura, vigencia, estado FROM beneficios_estudiante WHERE id_estudiante = $1',
       [id_estudiante]
     );
     res.json(result.rows);

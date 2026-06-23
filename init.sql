@@ -43,7 +43,8 @@ CREATE TABLE IF NOT EXISTS beneficios_estudiante (
     id_estudiante INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
     nombre_beca VARCHAR(100) NOT NULL,
     monto_cobertura NUMERIC(10, 2) NOT NULL,
-    vigencia VARCHAR(50) NOT NULL
+    vigencia VARCHAR(50) NOT NULL,
+    estado VARCHAR(50) DEFAULT 'Validado' -- NUEVO CAMPO PARA CA2 Y CA3
 );
 
 CREATE TABLE IF NOT EXISTS consultas (
@@ -78,11 +79,10 @@ ON CONFLICT (rut) DO NOTHING;
 INSERT INTO cuenta_estudiante (id_estudiante, arancel_bruto, beneficios_validados, saldo_neto) 
 VALUES ((SELECT id FROM usuarios WHERE rut = '12345678-9'), 3500000, 1500000, 2000000);
 
-INSERT INTO beneficios_estudiante (id_estudiante, nombre_beca, monto_cobertura, vigencia) 
+INSERT INTO beneficios_estudiante (id_estudiante, nombre_beca, monto_cobertura, vigencia, estado) 
 VALUES 
-((SELECT id FROM usuarios WHERE rut = '12345678-9'), 'Beca Bicentenario', 1000000, 'Marzo 2026 - Diciembre 2026'),
-((SELECT id FROM usuarios WHERE rut = '12345678-9'), 'Beca de Alimentación BAES', 500000, 'Marzo 2026 - Diciembre 2026');
-
+((SELECT id FROM usuarios WHERE rut = '12345678-9'), 'Beca Bicentenario', 1000000, 'Marzo 2026 - Diciembre 2026', 'Validado'),
+((SELECT id FROM usuarios WHERE rut = '12345678-9'), 'Crédito CAE (Aprobación en curso)', 1500000, 'Marzo 2026 - Diciembre 2026', 'Pendiente'); -- Beneficio Pendiente para testear CA2 y CA3
 INSERT INTO pagos (id_estudiante, monto, emisor) 
 VALUES 
 ((SELECT id FROM usuarios WHERE rut = '12345678-9'), 500000, 'Abono Estudiante'),

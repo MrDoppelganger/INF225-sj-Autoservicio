@@ -7,6 +7,7 @@ interface Beneficio {
   nombre_beca: string;
   monto_cobertura: string | number;
   vigencia: string;
+  estado: string;
 }
 
 export const MisBeneficios = ({ userId, setVista }: { userId: number, setVista: (v: string) => void }) => {
@@ -65,7 +66,13 @@ export const MisBeneficios = ({ userId, setVista }: { userId: number, setVista: 
                   </svg>
                 </div>
                 <h3>{beneficio.nombre_beca}</h3>
-                <span className="badge-activo">Beneficio Activo</span>
+                {beneficio.estado === 'Pendiente' ? (
+                <span className="badge-pago" style={{ backgroundColor: '#fef08a', color: '#92400e', border: '1px solid #fde68a' }}>
+                    Pendiente de validación
+                </span>
+                ) : (
+                <span className="badge-activo">Beneficio Validado</span>
+                )}
                 <p className="clic-detalle">Ver detalles de cobertura &rarr;</p>
               </div>
             ))

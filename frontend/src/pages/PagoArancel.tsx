@@ -15,7 +15,7 @@ interface HistorialPago {
 }
 
 export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
-  const [finanzas, setFinanzas] = useState({ arancel_bruto: 0, beneficios_validados: 0, saldo_neto: 0 });
+  const [finanzas, setFinanzas] = useState({ arancel_bruto: 0, beneficios_validados: 0, saldo_neto: 0, tiene_pendientes: false });
   const [historial, setHistorial] = useState<HistorialPago[]>([]);
   const [montoAbono, setMontoAbono] = useState<number | ''>('');
   const [cargando, setCargando] = useState(true);
@@ -116,6 +116,21 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
             </div>
           </div>
 
+          {finanzas.tiene_pendientes && (
+            <div className="alerta-bloqueo" style={{ marginBottom: '20px', backgroundColor: '#fffbeb', borderLeft: '4px solid #F1B929', color: '#92400e' }}>
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start', padding: '10px' }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '24px', height: '24px', flexShrink: 0 }}>
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <div>
+                  <strong>Nota Aclaratoria:</strong> Tienes beneficios en estado "Pendiente de validación" que aún no se restan de tu deuda. Tu saldo neto podría variar y disminuir a tu favor una vez que se complete la validación administrativa de la entidad correspondiente.
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="acciones-financieras">
             {finanzas.saldo_neto > 0 && (
               <button className="btn-accion-modal primario" onClick={() => setShowPlanModal(true)}>
