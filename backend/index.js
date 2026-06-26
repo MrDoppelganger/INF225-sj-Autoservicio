@@ -74,25 +74,12 @@ app.put('/api/perfil/bancario/:id_estudiante', async (req, res) => {
 app.get('/api/finanzas/:id_estudiante', async (req, res) => {
   try {
     const { id_estudiante } = req.params;
-    
-    // 1. Obtener finanzas
     const result = await pool.query(
       'SELECT arancel_bruto, beneficios_validados, saldo_neto FROM cuenta_estudiante WHERE id_estudiante = $1',
       [id_estudiante]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: "Cuenta no encontrada" });
-
-    // 2. Verificar si existen beneficios "Pendientes"
-    const pendientes = await pool.query(
-      "SELECT COUNT(*) FROM beneficios_estudiante WHERE id_estudiante = $1 AND estado = 'Pendiente'",
-      [id_estudiante]
-    );
-    
-    const finanzas = result.rows[0];
-    // Se envía un booleano al frontend
-    finanzas.tiene_pendientes = parseInt(pendientes.rows[0].count) > 0; 
-
-    res.json(finanzas);
+    res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: "Error al obtener finanzas" });
   }
@@ -102,7 +89,7 @@ app.get('/api/finanzas/historial/:id_estudiante', async (req, res) => {
   try {
     const { id_estudiante } = req.params;
     const result = await pool.query(
-      'SELECT monto, fecha FROM pagos WHERE id_estudiante = $1 ORDER BY fecha DESC',
+      'SELECT monto, fecha, mes_referencia FROM pagos WHERE id_estudiante = $1 ORDER BY fecha DESC',
       [id_estudiante]
     );
     res.json(result.rows);
@@ -112,10 +99,13 @@ app.get('/api/finanzas/historial/:id_estudiante', async (req, res) => {
 });
 
 app.post('/api/finanzas/pago', async (req, res) => {
-  const { id_estudiante, monto_abono } = req.body;
+  const { id_estudiante, monto_abono, mes_referencia } = req.body;
   try {
     await pool.query('BEGIN');
-    await pool.query('INSERT INTO pagos (id_estudiante, monto) VALUES ($1, $2)', [id_estudiante, monto_abono]);
+    await pool.query(
+      'INSERT INTO pagos (id_estudiante, monto, mes_referencia) VALUES ($1, $2, $3)', 
+      [id_estudiante, monto_abono, mes_referencia || null]
+    );
     await pool.query('UPDATE cuenta_estudiante SET saldo_neto = saldo_neto - $1 WHERE id_estudiante = $2', [monto_abono, id_estudiante]);
     await pool.query('COMMIT');
     res.json({ success: true });
@@ -125,14 +115,52 @@ app.post('/api/finanzas/pago', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Backend corriendo en el puerto ${PORT}`);
+// Endpoint para obtener la lista de beneficios del estudiante
+app.get('/api/beneficios/:id_estudiante', async (req, res) => {
+  try {
+    const { id_estudiante } = req.params;
+    const result = await pool.query(
+      'SELECT nombre_beneficio, monto, periodo_cobertura, estado FROM beneficios WHERE id_estudiante = $1',
+      [id_estudiante]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener beneficios" });
+  }
 });
 
+// ==========================================
+// RUTAS DE CONSULTAS / SOPORTE (NUEVO)
+// ==========================================
 
+// 1. Alumno: Crear Nueva Consulta
+app.post('/api/consultas', async (req, res) => {
+  const { id_usuario, asunto, mensaje } = req.body;
+  try {
+    const result = await pool.query(
+      "INSERT INTO consultas (id_usuario, asunto, mensaje, estado) VALUES ($1, $2, $3, 'Pendiente') RETURNING id",
+      [id_usuario, asunto, mensaje]
+    );
+    res.status(200).json({ success: true, id_consulta: result.rows[0].id });
+  } catch (err) {
+    res.status(500).json({ error: "Error al crear la consulta" });
+  }
+});
 
-// Endpoint para la bandeja centralizada del Administrador
+// 2. Alumno: Ver sus consultas
+app.get('/api/consultas/:id_usuario', async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT id, fecha, asunto, estado, respuesta FROM consultas WHERE id_usuario = $1 ORDER BY fecha DESC",
+      [req.params.id_usuario]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Error obteniendo consultas" });
+  }
+});
+
+// 3. Admin: Bandeja centralizada
 app.get('/api/admin/consultas/pendientes', async (req, res) => {
   try {
     const queryText = `
@@ -141,14 +169,13 @@ app.get('/api/admin/consultas/pendientes', async (req, res) => {
         c.fecha, 
         c.asunto, 
         c.mensaje, 
-        u.nombre, -- Tu tabla maneja el nombre completo aquí
+        u.nombre, 
         u.email AS correo_institucional
       FROM consultas c
       JOIN usuarios u ON c.id_usuario = u.id
       WHERE c.estado = 'Pendiente'
-      ORDER BY c.fecha ASC; -- CA 1: Orden cronológico de antigua a reciente
+      ORDER BY c.fecha ASC; 
     `;
-    
     const result = await pool.query(queryText);
     res.json(result.rows);
   } catch (err) {
@@ -157,16 +184,27 @@ app.get('/api/admin/consultas/pendientes', async (req, res) => {
   }
 });
 
-// Endpoint para obtener la lista de beneficios del estudiante (CA1)
-app.get('/api/beneficios/:id_estudiante', async (req, res) => {
+// 4. Admin: Responder Consulta
+app.put('/api/admin/consultas/responder/:id', async (req, res) => {
+  const { respuesta, correo_alumno } = req.body;
   try {
-    const { id_estudiante } = req.params;
-    const result = await pool.query(
-      'SELECT id, nombre_beca, monto_cobertura, vigencia, estado FROM beneficios_estudiante WHERE id_estudiante = $1',
-      [id_estudiante]
+    await pool.query(
+      "UPDATE consultas SET estado = 'Respondida', respuesta = $1 WHERE id = $2",
+      [respuesta, req.params.id]
     );
-    res.json(result.rows);
+    
+    // Simulación de correo automático
+    console.log(`\n📧 [EMAIL AUTOMÁTICO] Enviado a: ${correo_alumno}`);
+    console.log(`Asunto: Tu consulta ha sido Respondida`);
+    console.log(`Mensaje: Hemos resuelto tu requerimiento. Respuesta: ${respuesta}\n`);
+
+    res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: "Error al obtener beneficios" });
+    res.status(500).json({ error: "Error al guardar respuesta" });
   }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Backend corriendo en el puerto ${PORT}`);
 });

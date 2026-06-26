@@ -52,7 +52,8 @@ CREATE TABLE IF NOT EXISTS consultas (
     id_usuario INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
     asunto VARCHAR(255) NOT NULL,
     mensaje TEXT NOT NULL,
-    estado VARCHAR(50) DEFAULT 'Pendiente',
+    respuesta TEXT, -- Aquí se guardará lo que escriba el admin
+    estado VARCHAR(50) DEFAULT 'Pendiente', -- Estado inicial por defecto
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
