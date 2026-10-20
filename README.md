@@ -33,14 +33,6 @@ El proyecto es desarrollado bajo la metodología creación de una startup de sof
 
 ## Aspectos Tecnicos
 
-### 🏛️ Arquitectura del Sistema
-El sistema está construido bajo una **arquitectura desacoplada cliente-servidor de tres capas**:
-
-1. **Frontend (Capa de Presentación):** Single Page Application (SPA) desarrollada con **React 19**, **TypeScript** y empaquetada con **Vite**. Diseño responsivo basado en CSS modular.
-2. **Backend (Capa de Negocio y API):** Servidor API REST desarrollado en **Node.js** con **Express 5**, encargado de la lógica transaccional, autenticación y comunicación con la persistencia.
-3. **Base de Datos (Capa de Persistencia):** Servidor relacional **PostgreSQL 15**, con integridad referencial y disparadores para la gestión de cuentas y pagos.
-4. **Infraestructura:** Todos los servicios se encuentran orquestados y aislados mediante **Docker Compose**.
-
 ### Estructura del Repositorio
 
 ```bash
@@ -61,7 +53,7 @@ El sistema está construido bajo una **arquitectura desacoplada cliente-servidor
 └── README.md                  # Documento principal de bienvenida y despliegue
 ```
 
-### 🏛️ Arquitectura del Sistema
+### Arquitectura del Sistema
 El sistema está construido bajo una **arquitectura desacoplada cliente-servidor de tres capas**:
 
 1. **Frontend (Capa de Presentación):** Single Page Application (SPA) desarrollada con **React 19**, **TypeScript** y empaquetada con **Vite**. Diseño responsivo basado en CSS modular.
