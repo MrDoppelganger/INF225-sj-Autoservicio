@@ -1,6 +1,19 @@
+// -------------------Módulo de Mis Beneficios-----------------------
+// Visualización de becas ministeriales, coberturas y vigencias
+// Plataforma: Portal de Autoservicio Institucional (UTFSM)
+// -------------------------------------------------------------------
+
 import { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import '../styles/misBeneficios.css';
+
+// ---------------------Interfaces-----------------------------------
+// Definición de las propiedades recibidas y modelo de beneficio
+// -------------------------------------------------------------------
+interface MisBeneficiosProps {
+  userId: number;
+  setVista: (v: string) => void;
+}
 
 interface Beneficio {
   id: number;
@@ -10,16 +23,25 @@ interface Beneficio {
   estado: string;
 }
 
-export const MisBeneficios = ({ userId, setVista }: { userId: number, setVista: (v: string) => void }) => {
+// ------------------Componente React-------------------
+//   MisBeneficios:
+//       Despliega la cuadrícula de becas asociadas al estudiante,
+//       indicando su estado de validación y modal de detalle.
+// ---------------------Props---------------------------
+//   @param {MisBeneficiosProps} props - ID del estudiante y setVista.
+// ------------------Retorno----------------------------
+//   @returns {JSX.Element} Vista del catálogo de becas del alumno.
+// -----------------------------------------------------
+export const MisBeneficios = ({ userId, setVista }: MisBeneficiosProps) => {
   const [beneficios, setBeneficios] = useState<Beneficio[]>([]);
   const [beneficioSeleccionado, setBeneficioSeleccionado] = useState<Beneficio | null>(null);
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState<boolean>(true);
 
   useEffect(() => {
     fetch(`http://localhost:3000/api/beneficios/${userId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) setBeneficios(data);
+      .then((res) => res.json())
+      .then((datos) => {
+        if (Array.isArray(datos)) setBeneficios(datos);
         setCargando(false);
       })
       .catch(() => setCargando(false));
@@ -47,7 +69,7 @@ export const MisBeneficios = ({ userId, setVista }: { userId: number, setVista: 
           <p>Visualiza el detalle y cobertura de las becas aplicadas a tu cuenta.</p>
         </section>
 
-        {/* CA1: Lista con todos los beneficios */}
+        {/* Lista de beneficios asignados */}
         <section className="grid-beneficios">
           {beneficios.length === 0 ? (
             <div className="tarjeta-vacia">
@@ -61,17 +83,36 @@ export const MisBeneficios = ({ userId, setVista }: { userId: number, setVista: 
                 onClick={() => setBeneficioSeleccionado(beneficio)}
               >
                 <div className="tarjeta-icono">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  <svg 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <polygon 
+                      points={
+                        "12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 " +
+                        "12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                      }
+                    />
                   </svg>
                 </div>
                 <h3>{beneficio.nombre_beca}</h3>
                 {beneficio.estado === 'Pendiente' ? (
-                <span className="badge-pago" style={{ backgroundColor: '#fef08a', color: '#92400e', border: '1px solid #fde68a' }}>
+                  <span 
+                    className="badge-pago" 
+                    style={{
+                      backgroundColor: '#fef08a',
+                      color: '#92400e',
+                      border: '1px solid #fde68a',
+                    }}
+                  >
                     Pendiente de validación
-                </span>
+                  </span>
                 ) : (
-                <span className="badge-activo">Beneficio Validado</span>
+                  <span className="badge-activo">Beneficio Validado</span>
                 )}
                 <p className="clic-detalle">Ver detalles de cobertura &rarr;</p>
               </div>
@@ -80,13 +121,18 @@ export const MisBeneficios = ({ userId, setVista }: { userId: number, setVista: 
         </section>
       </main>
 
-      {/* CA2: Modal con vigencia y monto de cobertura */}
+      {/* Modal con vigencia y monto de cobertura */}
       {beneficioSeleccionado && (
         <div className="modal-overlay">
           <div className="modal-container pop-up-beneficio">
             <header className="modal-header">
               <h3>Detalle del Beneficio</h3>
-              <button className="btn-cerrar-icono" onClick={() => setBeneficioSeleccionado(null)}>×</button>
+              <button 
+                className="btn-cerrar-icono" 
+                onClick={() => setBeneficioSeleccionado(null)}
+              >
+                ×
+              </button>
             </header>
             <div className="modal-body detalle-cobertura">
               <h4>{beneficioSeleccionado.nombre_beca}</h4>
@@ -104,11 +150,15 @@ export const MisBeneficios = ({ userId, setVista }: { userId: number, setVista: 
               </div>
 
               <div className="alerta-info">
-                Este monto se aplica automáticamente a tu saldo neto. Revisa tu "Historial de Transacciones" en el módulo de pagos para ver las rebajas mensuales aplicadas por este emisor.
+                Este monto se aplica automáticamente a tu saldo neto. Revisa tu "Historial de Transacciones"
+                en el módulo de pagos para ver las rebajas mensuales aplicadas por este emisor.
               </div>
             </div>
             <footer className="modal-actions">
-              <button className="btn-aceptar-beneficio" onClick={() => setBeneficioSeleccionado(null)}>
+              <button 
+                className="btn-aceptar-beneficio" 
+                onClick={() => setBeneficioSeleccionado(null)}
+              >
                 Entendido
               </button>
             </footer>

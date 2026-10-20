@@ -1,70 +1,94 @@
+// -------------------Módulo de Autenticación-------------------------
+// Pantalla de inicio de sesión con validación de credenciales
+// Plataforma: Portal de Autoservicio Institucional (UTFSM)
+// -------------------------------------------------------------------
+
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logoUsm from '../assets/logo_usm.png';
 import '../styles/login.css';
 
+// ------------------Componente React-------------------
+//   Login:
+//       Despliega el formulario de ingreso con credenciales del
+//       estudiante y gestiona la redirección al panel principal.
+// ---------------------Props---------------------------
+//   Ninguna.
+// ------------------Retorno----------------------------
+//   @returns {JSX.Element} Vista de login institucional renderizada.
+// -----------------------------------------------------
 export const Login = () => {
-  const [rut, setRut] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [mensajeExito, setMensajeExito] = useState('');
+  const [rut, setRut] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<string>('');
+  const [mensajeExito, setMensajeExito] = useState<string>('');
   
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    // CA2: Mensaje de "Sesión cerrada correctamente"
+    // Captura mensaje de sesión cerrada desde el estado de navegación
     if (location.state && location.state.mensaje) {
       setMensajeExito(location.state.mensaje);
       window.history.replaceState({}, document.title);
     }
 
-    // CA3: Si ya hay sesión, redirigir directo al dashboard
-    const user = localStorage.getItem('user');
-    if (user) {
+    // Redirección inmediata si ya existe sesión activa almacenada
+    const usuarioActivo = localStorage.getItem('user');
+    if (usuarioActivo) {
       navigate('/dashboard');
     }
   }, [navigate, location]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // -------------------Función----------------------
+  //   handleSubmit:
+  //       Envía las credenciales al endpoint de autenticación,
+  //       almacena el perfil en caso de éxito o despliega error.
+  // ------------------Parámetros-------------------
+  //   @param {React.FormEvent} e - Evento de envío de formulario.
+  // ------------------Retorno-----------------------
+  //   @returns {Promise<void>}
+  // -----------------------------------------------
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setError('');
     setMensajeExito('');
 
     try {
-      const response = await fetch('http://localhost:3000/api/login', {
+      const respuesta = await fetch('http://localhost:3000/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rut, password }),
       });
 
-      const data = await response.json();
+      const datos = await respuesta.json();
 
-      if (data.success) {
-        // CA1: Guardar sesión y redirigir al panel
-        localStorage.setItem('user', JSON.stringify(data.user));
+      if (datos.success) {
+        localStorage.setItem('user', JSON.stringify(datos.user));
         navigate('/dashboard');
       } else {
-        // CA4: Denegar acceso y mostrar mensaje
-        setError(data.message);
+        setError(datos.message || 'Credenciales inválidas');
       }
     } catch (err) {
-      setError('Error al conectar con el servidor');
+      setError('Error al conectar con el servidor institucional');
     }
   };
 
   return (
     <div className="login-container">
-      {/* Mitad Izquierda: Branding Institucional */}
+      {/* Sección Izquierda: Branding Institucional */}
       <div className="login-brand">
         <img src={logoUsm} alt="Logo Universidad" className="login-logo-img" />
         <div className="brand-text">
           <h1>Portal de Autoservicio</h1>
-          <p>Gestiona tu información académica, certificados y aranceles desde una plataforma centralizada y segura.</p>
+          <p>
+            Gestiona tu información académica, certificados y aranceles desde una
+            plataforma centralizada y segura.
+          </p>
         </div>
       </div>
 
-      {/* Mitad Derecha: Formulario */}
+      {/* Sección Derecha: Formulario de Acceso */}
       <div className="login-form-wrapper">
         <div className="login-form-content">
           <h2>Iniciar Sesión</h2>

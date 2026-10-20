@@ -1,102 +1,206 @@
+// -------------------Módulo de Perfil Bancario----------------------
+// Gestión y actualización de la cuenta bancaria del estudiante
+// Plataforma: Portal de Autoservicio Institucional (UTFSM)
+// -------------------------------------------------------------------
+
 import { useState, useEffect } from 'react';
 import '../styles/perfilBancario.css';
 
-export const PerfilBancario = ({ userId }: { userId: number }) => {
-  const [datos, setDatos] = useState({ banco: '', tipo_cuenta: '', numero_cuenta: '', rut_titular: '' });
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hasData, setHasData] = useState(false);
-  const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
-  const [erroresDinamicos, setErroresDinamicos] = useState({ numero_cuenta: '', rut_titular: '' });
+// ---------------------Interfaces-----------------------------------
+// Definición de las propiedades recibidas por el componente bancario
+// -------------------------------------------------------------------
+interface PerfilBancarioProps {
+  userId: number;
+}
 
-  const cargarDatos = () => {
+interface DatosBancarios {
+  banco: string;
+  tipo_cuenta: string;
+  numero_cuenta: string;
+  rut_titular: string;
+}
+
+interface MensajeEstado {
+  texto: string;
+  tipo: string;
+}
+
+interface ErroresDinamicos {
+  numero_cuenta: string;
+  rut_titular: string;
+}
+
+// ------------------Componente React-------------------
+//   PerfilBancario:
+//       Despliega el estado de la cuenta bancaria inscrita y
+//       permite actualizarla mediante una ventana modal interactiva.
+// ---------------------Props---------------------------
+//   @param {PerfilBancarioProps} props - ID del estudiante.
+// ------------------Retorno----------------------------
+//   @returns {JSX.Element} Sección visual de información bancaria.
+// -----------------------------------------------------
+export const PerfilBancario = ({ userId }: PerfilBancarioProps) => {
+  const [datos, setDatos] = useState<DatosBancarios>({
+    banco: '',
+    tipo_cuenta: '',
+    numero_cuenta: '',
+    rut_titular: '',
+  });
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [hasData, setHasData] = useState<boolean>(false);
+  const [mensaje, setMensaje] = useState<MensajeEstado>({ texto: '', tipo: '' });
+  const [erroresDinamicos, setErroresDinamicos] = useState<ErroresDinamicos>({
+    numero_cuenta: '',
+    rut_titular: '',
+  });
+
+  // -------------------Función----------------------
+  //   cargarDatos:
+  //       Consulta la API REST para verificar si el estudiante
+  //       tiene datos bancarios guardados previamente.
+  // ------------------Parámetros-------------------
+  //   Ninguno.
+  // ------------------Retorno-----------------------
+  //   @returns {void}
+  // -----------------------------------------------
+  const cargarDatos = (): void => {
     fetch(`http://localhost:3000/api/perfil/bancario/${userId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.numero_cuenta) {
-            setDatos(data);
-            setHasData(true);
+      .then((res) => res.json())
+      .then((datosRecibidos) => {
+        if (datosRecibidos && datosRecibidos.numero_cuenta) {
+          setDatos(datosRecibidos);
+          setHasData(true);
         }
       });
   };
 
-  useEffect(() => { cargarDatos(); }, [userId]);
+  useEffect(() => {
+    cargarDatos();
+  }, [userId]);
 
-  const handleNumeroCuentaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // -------------------Función----------------------
+  //   handleNumeroCuentaChange:
+  //       Valida en tiempo real que solo se ingresen números
+  //       en el campo de número de cuenta bancaria.
+  // ------------------Parámetros-------------------
+  //   @param {React.ChangeEvent<HTMLInputElement>} e - Evento input.
+  // ------------------Retorno-----------------------
+  //   @returns {void}
+  // -----------------------------------------------
+  const handleNumeroCuentaChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const valor = e.target.value;
     setDatos({ ...datos, numero_cuenta: valor });
 
     const caracterInvalido = valor.match(/[^0-9]/);
-    
     if (caracterInvalido) {
-      setErroresDinamicos(prev => ({ 
+      setErroresDinamicos((prev) => ({ 
         ...prev, 
-        numero_cuenta: `El carácter "${caracterInvalido[0]}" es inválido. Solo se permiten números.` 
+        numero_cuenta: `El carácter "${caracterInvalido[0]}" es inválido. Solo se permiten números.`,
       }));
     } else {
-      setErroresDinamicos(prev => ({ ...prev, numero_cuenta: '' }));
+      setErroresDinamicos((prev) => ({ ...prev, numero_cuenta: '' }));
     }
   };
 
-  const handleRutChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // -------------------Función----------------------
+  //   handleRutChange:
+  //       Valida el formato del RUT del titular de la cuenta,
+  //       impidiendo puntos y permitiendo un único guion.
+  // ------------------Parámetros-------------------
+  //   @param {React.ChangeEvent<HTMLInputElement>} e - Evento input.
+  // ------------------Retorno-----------------------
+  //   @returns {void}
+  // -----------------------------------------------
+  const handleRutChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const valor = e.target.value;
     setDatos({ ...datos, rut_titular: valor });
     const caracterInvalido = valor.match(/[^0-9kK\-]/);
     
     if (caracterInvalido) {
       if (caracterInvalido[0] === '.') {
-        setErroresDinamicos(prev => ({ 
+        setErroresDinamicos((prev) => ({ 
           ...prev, 
-          rut_titular: `El carácter "." es inválido. El formato debe ser sin puntos y con guion.` 
+          rut_titular: 'El carácter "." es inválido. El formato debe ser sin puntos y con guion.',
         }));
       } else {
-        setErroresDinamicos(prev => ({ 
+        setErroresDinamicos((prev) => ({ 
           ...prev, 
-          rut_titular: `El carácter "${caracterInvalido[0]}" no está permitido en un RUT.` 
+          rut_titular: `El carácter "${caracterInvalido[0]}" no está permitido en un RUT.`,
         }));
       }
     } else if ((valor.match(/-/g) || []).length > 1) {
-      setErroresDinamicos(prev => ({ 
+      setErroresDinamicos((prev) => ({ 
         ...prev, 
-        rut_titular: `Solo puedes ingresar un guion.` 
+        rut_titular: 'Solo puedes ingresar un guion.',
       }));
     } else {
-      setErroresDinamicos(prev => ({ ...prev, rut_titular: '' }));
+      setErroresDinamicos((prev) => ({ ...prev, rut_titular: '' }));
     }
   };
 
-  const validarFormularioFinal = () => {
+  // -------------------Función----------------------
+  //   validarFormularioFinal:
+  //       Comprueba la completitud y formato de los datos
+  //       antes de ejecutar la petición PUT al backend.
+  // ------------------Parámetros-------------------
+  //   Ninguno.
+  // ------------------Retorno-----------------------
+  //   @returns {boolean} True si el formulario es válido.
+  // -----------------------------------------------
+  const validarFormularioFinal = (): boolean => {
     if (erroresDinamicos.numero_cuenta || erroresDinamicos.rut_titular) {
-      setMensaje({ texto: 'Por favor, corrige los caracteres en rojo antes de guardar.', tipo: 'error' });
+      setMensaje({
+        texto: 'Por favor, corrige los caracteres en rojo antes de guardar.',
+        tipo: 'error',
+      });
       return false;
     }
     if (datos.numero_cuenta.length < 8) {
-      setMensaje({ texto: 'Error: El número de cuenta debe tener al menos 8 dígitos.', tipo: 'error' });
+      setMensaje({
+        texto: 'Error: El número de cuenta debe tener al menos 8 dígitos.',
+        tipo: 'error',
+      });
       return false;
     }
     if (!datos.rut_titular.includes('-')) {
-      setMensaje({ texto: 'Error: El RUT debe contener un guion separador.', tipo: 'error' });
+      setMensaje({
+        texto: 'Error: El RUT debe contener un guion separador.',
+        tipo: 'error',
+      });
       return false;
     }
     if (!datos.banco || !datos.tipo_cuenta) {
-      setMensaje({ texto: 'Error: Debes seleccionar el banco y el tipo de cuenta.', tipo: 'error' });
+      setMensaje({
+        texto: 'Error: Debes seleccionar el banco y el tipo de cuenta.',
+        tipo: 'error',
+      });
       return false;
     }
     return true;
   };
 
-  const handleGuardar = async (e: React.FormEvent) => {
+  // -------------------Función----------------------
+  //   handleGuardar:
+  //       Envía la información actualizada a la base de datos
+  //       a través del endpoint de perfil bancario.
+  // ------------------Parámetros-------------------
+  //   @param {React.FormEvent} e - Evento de envío del form.
+  // ------------------Retorno-----------------------
+  //   @returns {Promise<void>}
+  // -----------------------------------------------
+  const handleGuardar = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setMensaje({ texto: '', tipo: '' });
 
     if (!validarFormularioFinal()) return; 
 
-    const res = await fetch(`http://localhost:3000/api/perfil/bancario/${userId}`, {
+    const respuesta = await fetch(`http://localhost:3000/api/perfil/bancario/${userId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(datos)
+      body: JSON.stringify(datos),
     });
 
-    if (res.ok) {
+    if (respuesta.ok) {
       setMensaje({ texto: 'Información bancaria actualizada con éxito.', tipo: 'exito' });
       setIsModalOpen(false);
       setHasData(true);
@@ -145,12 +249,11 @@ export const PerfilBancario = ({ userId }: { userId: number }) => {
           <div className="modal-container">
             <h3>Actualizar Información Bancaria</h3>
             <form onSubmit={handleGuardar} className="bancario-form">
-              
               <div className="form-group">
                 <label>Banco Institucional:</label>
                 <select 
                   value={datos.banco} 
-                  onChange={e => setDatos({...datos, banco: e.target.value})} 
+                  onChange={(e) => setDatos({ ...datos, banco: e.target.value })} 
                   required
                 >
                   <option value="" disabled>Seleccione un Banco...</option>
@@ -168,7 +271,7 @@ export const PerfilBancario = ({ userId }: { userId: number }) => {
                 <label>Tipo de Cuenta:</label>
                 <select 
                   value={datos.tipo_cuenta} 
-                  onChange={e => setDatos({...datos, tipo_cuenta: e.target.value})} 
+                  onChange={(e) => setDatos({ ...datos, tipo_cuenta: e.target.value })} 
                   required
                 >
                   <option value="" disabled>Seleccione tipo de cuenta...</option>
@@ -213,7 +316,13 @@ export const PerfilBancario = ({ userId }: { userId: number }) => {
               </div>
 
               <footer className="modal-actions">
-                <button type="button" className="btn-cancelar" onClick={() => setIsModalOpen(false)}>Cancelar</button>
+                <button 
+                  type="button" 
+                  className="btn-cancelar" 
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Cancelar
+                </button>
                 <button type="submit" className="btn-guardar">Guardar Cambios</button>
               </footer>
             </form>
