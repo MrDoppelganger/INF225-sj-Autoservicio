@@ -275,25 +275,66 @@ app.get('/api/beneficios/:idEstudiante', async (req, res) => {
 //       Crea un nuevo ticket de consulta emitido por el alumno.
 // -----------------Parámetros Body (JSON)---------------
 //       - id_usuario {number}: ID del usuario que consulta.
-//       - asunto {string}: Resumen de la solicitud.
-//       - mensaje {string}: Descripción detallada del problema.
+//       - asunto {string}: Resumen de la solicitud. (5 a 100 caracteres)
+//       - mensaje {string}: Descripción detallada del problema. (10 a 2000 caracteres)
 // ------------------Respuestas HTTP---------------------
-//       - 200 OK: Ticket creado con éxito y entrega de ID.
+//       - 201 Created: Ticket registrado, entrega sus datos.
+//       - 400 Bad Request: Datos faltantes o fuera de rango.
+//       - 403 Forbidden: El perfil no puede generar tickets.
+//       - 404 Not Found: El usuario no existe.
 //       - 500 Internal Error: Error al guardar la consulta.
 // -----------------------------------------------------
-app.post('/api/consultas', async (req, res) => {
-  const idUsuario = req.body.id_usuario || req.body.idUsuario;
-  const asunto = req.body.asunto;
-  const mensaje = req.body.mensaje;
+const LIMITES_CONSULTA = {
+  asuntoMin: 5,
+  asuntoMax: 100,
+  mensajeMin: 10,
+  mensajeMax: 2000,
+};
 
+app.post('/api/consultas', async (req, res) => {
+  const cuerpo = req.body || {};
+  const idUsuario = Number(cuerpo.id_usuario ?? cuerpo.idUsuario);
+  const asunto = typeof cuerpo.asunto === 'string' ? cuerpo.asunto.trim() : '';
+  const mensaje = typeof cuerpo.mensaje === 'string' ? cuerpo.mensaje.trim() : '';
+
+  // Validacion datos de entrada
+  if(!Number.isInteger(idUsuario) || idUsuario <= 0) {
+    return res.status(400).json({ success: false, message: 'Usuario inválido' });
+  }
+  if(asunto.length < LIMITES_CONSULTA.asuntoMin || asunto.length > LIMITES_CONSULTA.asuntoMax) {
+    return res.status(400).json({
+      success: false,
+      message: `El asunto debe tener entre ${LIMITES_CONSULTA.asuntoMin} y ${LIMITES_CONSULTA.asuntoMax} caracteres`,
+    });
+  }
+  if (mensaje.length < LIMITES_CONSULTA.mensajeMin || mensaje.length > LIMITES_CONSULTA.mensajeMax) {
+    return res.status(400).json({
+      success: false,
+      message: `El mensaje debe tener entre ${LIMITES_CONSULTA.mensajeMin} y ${LIMITES_CONSULTA.mensajeMax} caracteres`,
+    });
+  }
+  
   try {
-    const insercionSql = 
+    // Verificacion del perfil emisor
+    const usuario = await pool.query('SELECT perfil FROM usuarios WHERE id = $1', [idUsuario]);
+    if (usuario.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    }
+    if (usuario.rows[0].perfil === 'Administrador') {
+      return res.status(403).json({
+        success: false,
+        message: 'El personal de soporte no puede generar tickets',
+      });
+    }
+
+    const insercionSql =
       "INSERT INTO consultas (id_usuario, asunto, mensaje, estado) " +
-      "VALUES ($1, $2, $3, 'Pendiente') RETURNING id";
+      "VALUES ($1, $2, $3, 'Pendiente') RETURNING id, asunto, estado, fecha";
     const resultado = await pool.query(insercionSql, [idUsuario, asunto, mensaje]);
-    res.status(200).json({ success: true, id_consulta: resultado.rows[0].id });
+    const consulta = resultado.rows[0];
+    res.status(201).json({ success: true, id_consulta: consulta.id, consulta }); 
   } catch (err) {
-    res.status(500).json({ error: 'Error al crear la consulta' });
+    res.status(500).json({ success: false, message: 'Error al crear la consulta' });
   }
 });
 
