@@ -10,6 +10,7 @@ import { InformacionPersonal } from './InformacionPersonal';
 import { ObtenerCertificados } from './ObtenerCertificados'; 
 import { MisBeneficios } from './MisBeneficios';
 import { BandejaConsultas } from './BandejaConsultas';
+import { Soporte } from './Soporte';
 import logoUsm from '../assets/logo_usm.png';
 import '../styles/dashboard.css';
 
@@ -87,7 +88,9 @@ export const Dashboard = () => {
   if (vistaActual === 'beneficios') {
     return <MisBeneficios userId={usuario.id} setVista={setVistaActual} />;
   }
-
+  if (vistaActual === 'soporte') {
+    return <Soporte userId={usuario.id} perfil={usuario.perfil} setVista={setVistaActual} />;
+  }
   return (
     <div className="landing-container">
       <header className="landing-header">
@@ -208,6 +211,21 @@ export const Dashboard = () => {
               </svg>
               <h3>Obtener Certificados</h3>
               <p>Solicita y descarga certificados académicos y de matrícula.</p>
+            </div>
+            <div className="card-modulo" onClick={() => setVistaActual('soporte')}>
+              <svg 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className="card-icon"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <h3>Soporte</h3>
+              <p>Envía una consulta al equipo de soporte de la universidad.</p>
             </div>
           </>
         )}
