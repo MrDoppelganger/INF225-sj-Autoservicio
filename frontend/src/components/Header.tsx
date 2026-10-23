@@ -64,7 +64,10 @@ export const Header = ({ setVista, perfil }: HeaderProps) => {
       <nav className={`navbar-links ${menuAbierto ? 'abierto' : ''}`}>
         <button onClick={() => handleNavegacion('info')}>Mi Perfil</button>
         {(perfil === 'Estudiante Regular' || perfil === 'Alumno Nuevo') && (
-          <button onClick={() => handleNavegacion('pagos')}>Pago de Aranceles</button>
+          <>
+            <button onClick={() => handleNavegacion('pagos')}>Pago de Aranceles</button>
+            <button onClick={() => handleNavegacion('matricula')}>Matrícula</button>
+          </>
         )}
         {perfil !== 'Administrador' && (
           <button onClick={() => handleNavegacion('soporte')}>Soporte</button>

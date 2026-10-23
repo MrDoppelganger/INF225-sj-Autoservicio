@@ -11,6 +11,7 @@ import { ObtenerCertificados } from './ObtenerCertificados';
 import { MisBeneficios } from './MisBeneficios';
 import { BandejaConsultas } from './BandejaConsultas';
 import { Soporte } from './Soporte';
+import { EstadoMatricula } from './EstadoMatricula';
 import logoUsm from '../assets/logo_usm.png';
 import '../styles/dashboard.css';
 
@@ -78,6 +79,9 @@ export const Dashboard = () => {
   }
   if (vistaActual === 'pagos') {
     return <PagoArancel userId={usuario.id} setVista={setVistaActual} />;
+  }
+  if (vistaActual === 'matricula') {
+    return <EstadoMatricula userId={usuario.id} setVista={setVistaActual} />;
   }
   if (vistaActual === 'certificados') {
     return <ObtenerCertificados user={usuario} setVista={setVistaActual} />;
@@ -168,6 +172,24 @@ export const Dashboard = () => {
                   </svg>
                   <h3>Pago de Arancel</h3>
                   <p>Revisa tu estado de cuenta y realiza abonos.</p>
+                </div>
+
+                <div className="card-modulo" onClick={() => setVistaActual('matricula')}>
+                  <svg 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className="card-icon"
+                  >
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    <line x1="12" y1="11" x2="12" y2="17"></line>
+                    <line x1="9" y1="14" x2="15" y2="14"></line>
+                  </svg>
+                  <h3>Matrícula</h3>
+                  <p>Revisa el estado de tu matrícula semestral y realiza el pago en línea.</p>
                 </div>
 
                 <div className="card-modulo" onClick={() => setVistaActual('beneficios')}>

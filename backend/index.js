@@ -264,6 +264,102 @@ app.get('/api/beneficios/:idEstudiante', async (req, res) => {
   }
 });
 
+// -------------------Módulo de Matrícula-----------------------------
+// Endpoints orientados a la consulta y pago del derecho de matrícula
+// semestral para estudiantes regulares y nuevos ingresos.
+// -------------------------------------------------------------------
+
+// --------------------Endpoint REST--------------------
+//   GET /api/matricula/:idEstudiante
+//   Descripción:
+//       Obtiene el listado de matrículas registradas para el
+//       estudiante, incluyendo periodo, monto, fecha límite y estado.
+// -----------------Parámetros Ruta----------------------
+//       - idEstudiante {number}: Identificador del estudiante.
+// ------------------Respuestas HTTP---------------------
+//       - 200 OK: Lista de matrículas obtenida con éxito.
+//       - 500 Internal Error: Error al consultar matrículas.
+// -----------------------------------------------------
+app.get('/api/matricula/:idEstudiante', async (req, res) => {
+  try {
+    const idEstudiante = req.params.idEstudiante || req.params.id_estudiante;
+    const consultaSql = 
+      'SELECT id, id_estudiante, periodo_academico, monto_matricula, ' +
+      'estado_matricula, fecha_limite ' +
+      'FROM matriculas WHERE id_estudiante = $1 ORDER BY periodo_academico DESC';
+    const resultado = await pool.query(consultaSql, [idEstudiante]);
+    res.json(resultado.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener matrícula' });
+  }
+});
+
+// --------------------Endpoint REST--------------------
+//   POST /api/matricula/pago
+//   Descripción:
+//       Procesa el pago de una matrícula pendiente, actualizando
+//       su estado a Pagada y registrando el pago en la base de datos.
+// -----------------Parámetros Body (JSON)---------------
+//       - id_estudiante {number}: Identificador del alumno.
+//       - id_matricula {number}: Identificador de la matrícula.
+//       - metodo_pago {string}: Medio de pago (ej: WebPay).
+// ------------------Respuestas HTTP---------------------
+//       - 200 OK: Pago procesado exitosamente.
+//       - 400 Bad Request: Matrícula ya pagada o inválida.
+//       - 404 Not Found: Matrícula no encontrada.
+//       - 500 Internal Error: Error al procesar el pago.
+// -----------------------------------------------------
+app.post('/api/matricula/pago', async (req, res) => {
+  const idEstudiante = req.body.id_estudiante || req.body.idEstudiante;
+  const idMatricula = req.body.id_matricula || req.body.idMatricula;
+  const metodoPago = req.body.metodo_pago || req.body.metodoPago || 'WebPay';
+
+  try {
+    await pool.query('BEGIN');
+
+    const consultaMatricula = 
+      'SELECT id, monto_matricula, periodo_academico, estado_matricula ' +
+      'FROM matriculas WHERE id = $1 AND id_estudiante = $2 FOR UPDATE';
+    const resultadoMatricula = await pool.query(consultaMatricula, [idMatricula, idEstudiante]);
+
+    if (resultadoMatricula.rows.length === 0) {
+      await pool.query('ROLLBACK');
+      return res.status(404).json({ error: 'Matrícula no encontrada' });
+    }
+
+    const matricula = resultadoMatricula.rows[0];
+    if (matricula.estado_matricula === 'Pagada') {
+      await pool.query('ROLLBACK');
+      return res.status(400).json({ error: 'La matrícula ya se encuentra pagada' });
+    }
+
+    const actualizarMatriculaSql = 
+      "UPDATE matriculas SET estado_matricula = 'Pagada' WHERE id = $1";
+    await pool.query(actualizarMatriculaSql, [idMatricula]);
+
+    const insertarPagoSql = 
+      'INSERT INTO pagos (id_estudiante, id_matricula, monto, tipo_pago, ' +
+      'metodo_pago, mes_referencia, emisor, estado) ' +
+      'VALUES ($1, $2, $3, $4, $5, $6, $7, $8)';
+    await pool.query(insertarPagoSql, [
+      idEstudiante,
+      idMatricula,
+      matricula.monto_matricula,
+      'Matrícula',
+      metodoPago,
+      matricula.periodo_academico,
+      'Abono Estudiante',
+      'Aprobado',
+    ]);
+
+    await pool.query('COMMIT');
+    res.json({ success: true, message: 'Pago de matrícula procesado con éxito' });
+  } catch (err) {
+    await pool.query('ROLLBACK');
+    res.status(500).json({ error: 'Error procesando el pago de matrícula' });
+  }
+});
+
 // -------------------Módulo de Consultas y Soporte-------------------
 // Endpoints orientados a la gestión de tickets de ayuda técnica
 // y académica tanto para alumnos como para personal administrativo.
@@ -304,13 +400,17 @@ app.post('/api/consultas', async (req, res) => {
   if(asunto.length < LIMITES_CONSULTA.asuntoMin || asunto.length > LIMITES_CONSULTA.asuntoMax) {
     return res.status(400).json({
       success: false,
-      message: `El asunto debe tener entre ${LIMITES_CONSULTA.asuntoMin} y ${LIMITES_CONSULTA.asuntoMax} caracteres`,
+      message:
+        `El asunto debe tener entre ${LIMITES_CONSULTA.asuntoMin} y ` +
+        `${LIMITES_CONSULTA.asuntoMax} caracteres`,
     });
   }
   if (mensaje.length < LIMITES_CONSULTA.mensajeMin || mensaje.length > LIMITES_CONSULTA.mensajeMax) {
     return res.status(400).json({
       success: false,
-      message: `El mensaje debe tener entre ${LIMITES_CONSULTA.mensajeMin} y ${LIMITES_CONSULTA.mensajeMax} caracteres`,
+      message:
+        `El mensaje debe tener entre ${LIMITES_CONSULTA.mensajeMin} y ` +
+        `${LIMITES_CONSULTA.mensajeMax} caracteres`,
     });
   }
   
