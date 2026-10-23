@@ -66,6 +66,9 @@ export const Header = ({ setVista, perfil }: HeaderProps) => {
         {(perfil === 'Estudiante Regular' || perfil === 'Alumno Nuevo') && (
           <button onClick={() => handleNavegacion('pagos')}>Pago de Aranceles</button>
         )}
+        {perfil !== 'Administrador' && (
+          <button onClick={() => handleNavegacion('soporte')}>Soporte</button>
+        )}
       </nav>
     </header>
   );
