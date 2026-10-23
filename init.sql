@@ -368,6 +368,10 @@ VALUES
     '2026-1', 150000, 'Pagada', '2026-03-31'
 ),
 (
+    (SELECT id FROM usuarios WHERE rut = '12345678-9'),
+    '2026-2', 160000, 'Pendiente', '2026-08-31'
+),
+(
     (SELECT id FROM usuarios WHERE rut = '11111111-1'),
     '2026-1', 150000, 'Pagada', '2026-03-31'
 ),
