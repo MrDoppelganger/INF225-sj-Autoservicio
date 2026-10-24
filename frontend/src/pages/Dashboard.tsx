@@ -264,21 +264,6 @@ export const Dashboard = () => {
               <h3>Obtener Certificados</h3>
               <p>Solicita y descarga certificados académicos y de matrícula.</p>
             </div>
-            <div className="card-modulo" onClick={() => setVistaActual('soporte')}>
-              <svg 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className="card-icon"
-              >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <h3>Soporte</h3>
-              <p>Envía una consulta al equipo de soporte de la universidad.</p>
-            </div>
 
             <div className="card-modulo" onClick={() => setVistaActual('notificaciones')}>
               <svg 
@@ -295,6 +280,22 @@ export const Dashboard = () => {
               </svg>
               <h3>Bandeja de Notificaciones</h3>
               <p>Revisa tus alertas académicas, pagos y beneficios.</p>
+            </div>
+
+            <div className="card-modulo" onClick={() => setVistaActual('soporte')}>
+              <svg 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className="card-icon"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <h3>Soporte</h3>
+              <p>Envía una consulta al equipo de soporte de la universidad.</p>
             </div>
           </>
         )}
