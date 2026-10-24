@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { ObtenerCertificados } from './pages/ObtenerCertificados';
+import { PreguntasFrecuentes } from './pages/PreguntasFrecuentes';
 
 // ------------------Componente React-------------------
 //   App:
@@ -24,6 +25,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/obtenercertificado" element={<ObtenerCertificados />} />
+        <Route path="/Q&A" element={<PreguntasFrecuentes />} />
       </Routes>
     </BrowserRouter>
   );
