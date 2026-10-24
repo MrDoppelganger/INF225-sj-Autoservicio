@@ -70,7 +70,10 @@ export const Header = ({ setVista, perfil }: HeaderProps) => {
           </>
         )}
         {perfil !== 'Administrador' && (
-          <button onClick={() => handleNavegacion('soporte')}>Soporte</button>
+          <>
+            <button onClick={() => handleNavegacion('notificaciones')}>Notificaciones</button>
+            <button onClick={() => handleNavegacion('soporte')}>Soporte</button>
+          </>
         )}
       </nav>
     </header>

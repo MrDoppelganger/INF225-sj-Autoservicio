@@ -12,6 +12,7 @@ import { MisBeneficios } from './MisBeneficios';
 import { BandejaConsultas } from './BandejaConsultas';
 import { Soporte } from './Soporte';
 import { EstadoMatricula } from './EstadoMatricula';
+import { BandejaNotificaciones } from './BandejaNotificaciones';
 import logoUsm from '../assets/logo_usm.png';
 import '../styles/dashboard.css';
 
@@ -94,6 +95,9 @@ export const Dashboard = () => {
   }
   if (vistaActual === 'soporte') {
     return <Soporte userId={usuario.id} perfil={usuario.perfil} setVista={setVistaActual} />;
+  }
+  if (vistaActual === 'notificaciones') {
+    return <BandejaNotificaciones userId={usuario.id} setVista={setVistaActual} />;
   }
   return (
     <div className="landing-container">
@@ -248,6 +252,23 @@ export const Dashboard = () => {
               </svg>
               <h3>Soporte</h3>
               <p>Envía una consulta al equipo de soporte de la universidad.</p>
+            </div>
+
+            <div className="card-modulo" onClick={() => setVistaActual('notificaciones')}>
+              <svg 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className="card-icon"
+              >
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+              <h3>Bandeja de Notificaciones</h3>
+              <p>Revisa tus alertas académicas, pagos y beneficios.</p>
             </div>
           </>
         )}

@@ -1,0 +1,221 @@
+/* -------------------Estilos de Bandeja de Notificaciones------------- */
+/* Hoja de estilos institucional para la visualización de avisos y alertas */
+/* Plataforma: Portal de Autoservicio Institucional (UTFSM)               */
+/* --------------------------------------------------------------------- */
+
+/* Layout y Contenedor Principal */
+.layout-principal {
+  min-height: 100vh;
+  width: 100vw;
+  background-color: #f4f7f6;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.notificaciones-main {
+  max-width: 1050px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Cabecera del Módulo */
+.notificaciones-header {
+  margin-bottom: 25px;
+}
+
+.notificaciones-header h2 {
+  color: #003B70;
+  font-size: 2rem;
+  margin: 0 0 8px 0;
+}
+
+.notificaciones-header p {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Contenedor de la Tabla */
+.tabla-notificaciones-container {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.tabla-notificaciones {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tabla-notificaciones th {
+  background-color: #003B70;
+  color: #ffffff;
+  padding: 16px 20px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tabla-notificaciones td {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.tabla-notificaciones tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla-notificaciones tr:hover td {
+  background-color: #f8fafc;
+}
+
+/* Fila no leída destacada */
+.fila-no-leida {
+  background-color: #f0f7ff;
+}
+
+.fila-no-leida td {
+  font-weight: 500;
+}
+
+.notif-fecha {
+  white-space: nowrap;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.notif-titulo {
+  color: #003B70;
+  font-weight: bold;
+}
+
+.notif-mensaje {
+  max-width: 400px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* Texto de Categoría / Tipo (Texto plano universitario) */
+.texto-tipo {
+  font-weight: 600;
+  color: #334155;
+}
+
+/* Estado de Lectura */
+.badge-estado {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-estado.no-leida {
+  background-color: #F1B929;
+  color: #003B70;
+}
+
+.badge-estado.leida {
+  background-color: #e2e8f0;
+  color: #64748b;
+}
+
+/* Botón Marcar como leída */
+.btn-marcar-leida {
+  background-color: #ffffff;
+  color: #003B70;
+  border: 1px solid #003B70;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-marcar-leida:hover {
+  background-color: #003B70;
+  color: #ffffff;
+}
+
+/* Estado Vacío (Caso de Prueba CP-9) */
+.bandeja-vacia-contenedor {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 60px 20px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.bandeja-vacia-icono {
+  width: 48px;
+  height: 48px;
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+.bandeja-vacia-contenedor h3 {
+  color: #1e293b;
+  font-size: 1.5rem;
+  margin: 0 0 8px 0;
+}
+
+.bandeja-vacia-contenedor p {
+  color: #64748b;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Pantalla de Carga */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  color: #003B70;
+  font-weight: bold;
+}
+
+.loader-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #003B70;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: girar 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes girar {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .notificaciones-main {
+    padding: 20px 15px;
+  }
+
+  .tabla-notificaciones th,
+  .tabla-notificaciones td {
+    padding: 10px 8px;
+    font-size: 0.85rem;
+  }
+
+  .notif-mensaje {
+    max-width: 180px;
+  }
+}

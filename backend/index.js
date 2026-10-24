@@ -205,7 +205,8 @@ app.get('/api/finanzas/historial/:idEstudiante', async (req, res) => {
 //   POST /api/finanzas/pago
 //   Descripción:
 //       Procesa un abono financiero al arancel del estudiante,
-//       registrando el pago y descontando de su saldo neto.
+//       registrando el pago, descontando de su saldo neto y
+//       generando la notificación de pago correspondiente (RS-14).
 // -----------------Parámetros Body (JSON)---------------
 //       - id_estudiante {number}: Identificador del alumno.
 //       - monto_abono {number}: Monto a descontar de la deuda.
@@ -230,6 +231,13 @@ app.post('/api/finanzas/pago', async (req, res) => {
       'UPDATE cuenta_estudiante SET saldo_neto = saldo_neto - $1 ' +
       'WHERE id_estudiante = $2';
     await pool.query(actualizacionSaldoSql, [montoAbono, idEstudiante]);
+
+    // Generación de notificación automática de pago exitoso (RS-14)
+    const insercionNotifSql = 
+      'INSERT INTO notificaciones (id_usuario, titulo, mensaje, tipo) ' +
+      'VALUES ($1, $2, $3, $4)';
+    const mensajeNotif = `Se ha recibido conforme su pago de arancel por un valor de $${Number(montoAbono).toLocaleString('es-CL')}.`;
+    await pool.query(insercionNotifSql, [idEstudiante, 'Abono Recibido', mensajeNotif, 'Financiera']);
 
     await pool.query('COMMIT');
     res.json({ success: true });
@@ -298,7 +306,8 @@ app.get('/api/matricula/:idEstudiante', async (req, res) => {
 //   POST /api/matricula/pago
 //   Descripción:
 //       Procesa el pago de una matrícula pendiente, actualizando
-//       su estado a Pagada y registrando el pago en la base de datos.
+//       su estado a Pagada, registrando el pago en la base de datos
+//       y emitiendo la notificación correspondiente (RS-14).
 // -----------------Parámetros Body (JSON)---------------
 //       - id_estudiante {number}: Identificador del alumno.
 //       - id_matricula {number}: Identificador de la matrícula.
@@ -351,6 +360,13 @@ app.post('/api/matricula/pago', async (req, res) => {
       'Abono Estudiante',
       'Aprobado',
     ]);
+
+    // Generación de notificación de pago de matrícula exitoso (RS-14)
+    const insercionNotifSql = 
+      'INSERT INTO notificaciones (id_usuario, titulo, mensaje, tipo) ' +
+      'VALUES ($1, $2, $3, $4)';
+    const mensajeNotif = `Se ha procesado exitosamente el pago de matrícula para el periodo ${matricula.periodo_academico} por un valor de $${Number(matricula.monto_matricula).toLocaleString('es-CL')}.`;
+    await pool.query(insercionNotifSql, [idEstudiante, 'Pago de Matrícula Recibido', mensajeNotif, 'Financiera']);
 
     await pool.query('COMMIT');
     res.json({ success: true, message: 'Pago de matrícula procesado con éxito' });
@@ -527,6 +543,89 @@ app.put('/api/admin/consultas/responder/:id', async (req, res) => {
     res.status(500).json({ error: 'Error al guardar respuesta' });
   }
 });
+
+// -------------------Módulo de Notificaciones-----------------------
+// Endpoints orientados a la consulta, generación de alertas y
+// visualización de avisos en la bandeja de notificaciones.
+// -------------------------------------------------------------------
+
+// --------------------Endpoint REST--------------------
+//   GET /api/notificaciones/:idUsuario
+//   Descripción:
+//       Obtiene la lista cronológica de notificaciones y genera
+//       automáticamente alertas por beneficios pendientes (RS-10, RS-11, RS-13).
+// -----------------Parámetros Ruta----------------------
+//       - idUsuario {number}: Identificador del estudiante.
+// ------------------Respuestas HTTP---------------------
+//       - 200 OK: Lista de notificaciones ordenada descendentemente.
+//       - 500 Internal Error: Error al consultar notificaciones.
+// -----------------------------------------------------
+app.get('/api/notificaciones/:idUsuario', async (req, res) => {
+  try {
+    const idUsuario = req.params.idUsuario || req.params.id_usuario;
+
+    // Generación de alertas por beneficios pendientes de validación (RS-13)
+    const consultaBeneficiosPendientes = 
+      "SELECT nombre_beca FROM beneficios_estudiante " +
+      "WHERE id_estudiante = $1 AND estado = 'Pendiente'";
+    const resBeneficios = await pool.query(consultaBeneficiosPendientes, [idUsuario]);
+
+    for (const beneficio of resBeneficios.rows) {
+      const tituloAlerta = 'Validación de Beca en Trámite';
+      const mensajeAlerta = `Su postulación a ${beneficio.nombre_beca} se encuentra en estado Pendiente de validación.`;
+
+      const existeAlertaSql = 
+        'SELECT id FROM notificaciones ' +
+        'WHERE id_usuario = $1 AND titulo = $2 AND mensaje = $3';
+      const resExiste = await pool.query(existeAlertaSql, [idUsuario, tituloAlerta, mensajeAlerta]);
+
+      if (resExiste.rows.length === 0) {
+        const insertarAlertaSql = 
+          'INSERT INTO notificaciones (id_usuario, titulo, mensaje, tipo) ' +
+          'VALUES ($1, $2, $3, $4)';
+        await pool.query(insertarAlertaSql, [idUsuario, tituloAlerta, mensajeAlerta, 'Alerta']);
+      }
+    }
+
+    const consultaSql = 
+      'SELECT id, id_usuario, titulo, mensaje, tipo, leida, fecha ' +
+      'FROM notificaciones WHERE id_usuario = $1 ORDER BY fecha DESC';
+    const resultado = await pool.query(consultaSql, [idUsuario]);
+    res.json(resultado.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener notificaciones' });
+  }
+});
+
+// --------------------Endpoint REST--------------------
+//   PUT /api/notificaciones/leer/:id
+//   Descripción:
+//       Actualiza el estado de una notificación a leída (RS-11).
+// -----------------Parámetros Ruta----------------------
+//       - id {number}: Identificador de la notificación.
+// ------------------Respuestas HTTP---------------------
+//       - 200 OK: Notificación marcada como leída.
+//       - 500 Internal Error: Error al actualizar notificación.
+// -----------------------------------------------------
+app.put('/api/notificaciones/leer/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const actualizacionSql = 
+      'UPDATE notificaciones SET leida = TRUE WHERE id = $1';
+    await pool.query(actualizacionSql, [id]);
+    res.json({ success: true, message: 'Notificación marcada como leída' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al actualizar estado de notificación' });
+  }
+});
+
+// PD: Recalcar que las notificaciones se crean automáticamente y solo se guardan en la base de datos
+// para luego ser mostradas en su vista/pagina respectiva, 
+// no se implementa un envío de notificación por correo, celular ni nada de ese estilo ya
+// que eso estaría fuera de alcance (según lo planificado durante el semestre)
+
+
+
 
 // -------------------Inicio del Servidor-----------------------------
 // Puesta en marcha de la escucha HTTP en el puerto parametrizado
