@@ -531,7 +531,7 @@ VALUES
 (
     (SELECT id FROM usuarios WHERE rut = '12345678-9'),
     NULL,
-    (SELECT id FROM matriculas WHERE id_estudiante = (SELECT id FROM usuarios WHERE rut = '12345678-9')),
+    (SELECT id FROM matriculas WHERE id_estudiante = (SELECT id FROM usuarios WHERE rut = '12345678-9') AND periodo_academico = '2026-1'),
     NULL,
     150000,
     'Matrícula',

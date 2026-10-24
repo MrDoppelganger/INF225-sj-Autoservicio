@@ -64,7 +64,7 @@ El sistema está construido bajo una **arquitectura desacoplada cliente-servidor
 ### <u> **Levantamiento**: </u>
 *   Se recomienda asegurar que no se posee nada en los puertos ***3000***, ***5173*** y ***5432*** de localhost.
 *   Se debe abrir una terminal ubicada en la carpeta raiz del proyecto
-*   dentro de la terminal se levanta el proyecto ejecutando el comando: ***docker compose up --build***.
+*   dentro de la terminal se levanta el proyecto ejecutando el comando: ***docker compose up --build***. En caso de problemas, ejecutar ***docker compose down -v*** antes.
 *   Acceder a los servicios desde el navegador:
     * **Portal Web (Frontend):** [http://localhost:5173](http://localhost:5173)
     * **Servidor API (Backend):** [http://localhost:3000](http://localhost:3000)
