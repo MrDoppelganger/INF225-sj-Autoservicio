@@ -109,9 +109,35 @@ export const Dashboard = () => {
             <p>Tipo de Usuario: <strong>{usuario.perfil}</strong></p>
           </div>
         </div>
+        <div className="header-actions">
+        <button
+          className="btn-preguntas"
+          onClick={() => navigate('/Q&A')}
+          aria-label="Preguntas frecuentes"
+          title="Preguntas frecuentes"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="21"
+            height="21"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+            <path d="M12 17h.01" />
+            <circle cx="12" cy="12" r="10" />
+          </svg>
+        </button>
+
         <button className="btn-logout" onClick={handleLogout}>
           Cerrar Sesión
         </button>
+      </div>
+        
       </header>
 
       <main className="landing-grid">
