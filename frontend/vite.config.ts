@@ -1,6 +1,4 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
 import react from '@vitejs.plugin-react'
 
 export default defineConfig({
@@ -12,9 +10,8 @@ export default defineConfig({
       usePolling: true,
     },
     allowedHosts: [
-      'frontend-xaiw.onrender.com', // Dominio de Render
-      '.onrender.com'               // Permite cualquier subdominio en Render (opcional pero recomendado)
+      'frontend-xaiw.onrender.com',
+      '.onrender.com'
     ]
   }
 })
-
