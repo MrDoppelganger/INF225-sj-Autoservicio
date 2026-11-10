@@ -74,7 +74,7 @@ export const Soporte = ({ userId, perfil, setVista }: SoporteProps) => {
     setTicketCreado(null);
 
     try {
-      const respuesta = await fetch('http://localhost:3000/api/consultas', {
+      const respuesta = await fetch('${API_BASE_URL}/api/consultas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

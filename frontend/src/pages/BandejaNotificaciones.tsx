@@ -59,7 +59,7 @@ export const BandejaNotificaciones = ({ userId, user, setVista }: BandejaNotific
   //   @returns {void}
   // -----------------------------------------------
   const cargarNotificaciones = (): void => {
-    fetch(`http://localhost:3000/api/notificaciones/${idEstudiante}`)
+    fetch(`${API_BASE_URL}/api/notificaciones/${idEstudiante}`)
       .then((res) => res.json())
       .then((datos) => {
         if (Array.isArray(datos)) {
@@ -88,7 +88,7 @@ export const BandejaNotificaciones = ({ userId, user, setVista }: BandejaNotific
   // -----------------------------------------------
   const handleMarcarLeida = async (id: number): Promise<void> => {
     try {
-      const respuesta = await fetch(`http://localhost:3000/api/notificaciones/leer/${id}`, {
+      const respuesta = await fetch(`${API_BASE_URL}/api/notificaciones/leer/${id}`, {
         method: 'PUT',
       });
       if (respuesta.ok) {

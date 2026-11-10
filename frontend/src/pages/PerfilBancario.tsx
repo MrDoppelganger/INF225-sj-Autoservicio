@@ -3,7 +3,8 @@
 // Plataforma: Portal de Autoservicio Institucional (UTFSM)
 // -------------------------------------------------------------------
 
-import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
+
 import '../styles/perfilBancario.css';
 
 // ---------------------Interfaces-----------------------------------
@@ -64,7 +65,7 @@ export const PerfilBancario = ({ userId }: PerfilBancarioProps) => {
   //   @returns {void}
   // -----------------------------------------------
   const cargarDatos = (): void => {
-    fetch(`http://localhost:3000/api/perfil/bancario/${userId}`)
+    fetch(`${API_BASE_URL}/api/perfil/bancario/${userId}`)
       .then((res) => res.json())
       .then((datosRecibidos) => {
         if (datosRecibidos && datosRecibidos.numero_cuenta) {
@@ -194,7 +195,7 @@ export const PerfilBancario = ({ userId }: PerfilBancarioProps) => {
 
     if (!validarFormularioFinal()) return; 
 
-    const respuesta = await fetch(`http://localhost:3000/api/perfil/bancario/${userId}`, {
+    const respuesta = await fetch(`${API_BASE_URL}/api/perfil/bancario/${userId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(datos),

@@ -38,7 +38,7 @@ export const MisBeneficios = ({ userId, setVista }: MisBeneficiosProps) => {
   const [cargando, setCargando] = useState<boolean>(true);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/beneficios/${userId}`)
+    fetch(`${API_BASE_URL}/api/beneficios/${userId}`)
       .then((res) => res.json())
       .then((datos) => {
         if (Array.isArray(datos)) setBeneficios(datos);

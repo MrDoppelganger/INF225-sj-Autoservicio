@@ -43,7 +43,7 @@ export const BandejaConsultas = ({ setVista }: BandejaConsultasProps) => {
   const [respuestaAdmin, setRespuestaAdmin] = useState<string>('');
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/admin/consultas/pendientes')
+    fetch('${API_BASE_URL}/api/admin/consultas/pendientes')
       .then((res) => res.json())
       .then((datos) => {
         setConsultas(datos);
@@ -68,7 +68,7 @@ export const BandejaConsultas = ({ setVista }: BandejaConsultasProps) => {
   const enviarRespuesta = async (id: number, correo: string): Promise<void> => {
     if (!respuestaAdmin.trim()) return alert('La respuesta no puede estar vacía.');
 
-    const respuesta = await fetch(`http://localhost:3000/api/admin/consultas/responder/${id}`, {
+    const respuesta = await fetch(`${API_BASE_URL}/api/admin/consultas/responder/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ respuesta: respuestaAdmin, correo_alumno: correo }),

@@ -3,7 +3,8 @@
 // Plataforma: Portal de Autoservicio Institucional (UTFSM)
 // -------------------------------------------------------------------
 
-import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
+
 import { useNavigate, useLocation } from 'react-router-dom';
 import logoUsm from '../assets/logo_usm.png';
 import '../styles/login.css';
@@ -55,7 +56,7 @@ export const Login = () => {
     setMensajeExito('');
 
     try {
-      const respuesta = await fetch('http://localhost:3000/api/login', {
+      const respuesta = await fetch('${API_BASE_URL}/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rut, password }),

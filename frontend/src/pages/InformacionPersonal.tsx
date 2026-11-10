@@ -50,7 +50,7 @@ export const InformacionPersonal = ({ userId, setVista }: InformacionPersonalPro
   const [usuario, setUsuario] = useState<UsuarioDetalle | null>(null);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/usuario/info/${userId}`)
+    fetch(`${API_BASE_URL}/api/usuario/info/${userId}`)
       .then((res) => res.json())
       .then((datos) => setUsuario(datos))
       .catch((err) => console.error('Error al cargar perfil:', err));
@@ -70,7 +70,7 @@ export const InformacionPersonal = ({ userId, setVista }: InformacionPersonalPro
     const mensaje = prompt('Describe detalladamente tu inconveniente:');
     
     if (asunto && mensaje) {
-      fetch('http://localhost:3000/api/consultas', {
+      fetch('${API_BASE_URL}/api/consultas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_usuario: userId, asunto, mensaje }),
@@ -95,7 +95,7 @@ export const InformacionPersonal = ({ userId, setVista }: InformacionPersonalPro
   //   @returns {void}
   // -----------------------------------------------
   const handleVerConsultas = (): void => {
-    fetch(`http://localhost:3000/api/consultas/${userId}`)
+    fetch(`${API_BASE_URL}/api/consultas/${userId}`)
       .then((res) => res.json())
       .then((datos: ConsultaTicket[]) => {
         let textoHistorial = 'TUS CONSULTAS REALIZADAS:\n\n';

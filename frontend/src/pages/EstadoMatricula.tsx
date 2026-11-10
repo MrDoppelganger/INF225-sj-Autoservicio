@@ -50,7 +50,7 @@ export const EstadoMatricula = ({ userId, setVista }: EstadoMatriculaProps) => {
   //   @returns {void}
   // -----------------------------------------------
   const cargarMatriculas = (): void => {
-    fetch(`http://localhost:3000/api/matricula/${userId}`)
+    fetch(`${API_BASE_URL}/api/matricula/${userId}`)
       .then((res) => res.json())
       .then((datos) => {
         if (Array.isArray(datos)) {
@@ -86,7 +86,7 @@ export const EstadoMatricula = ({ userId, setVista }: EstadoMatriculaProps) => {
     setProcesandoPago(true);
 
     try {
-      const respuesta = await fetch('http://localhost:3000/api/matricula/pago', {
+      const respuesta = await fetch('${API_BASE_URL}/api/matricula/pago', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

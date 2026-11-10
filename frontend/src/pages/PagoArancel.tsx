@@ -4,6 +4,8 @@
 // -------------------------------------------------------------------
 
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
+
 import { Header } from '../components/Header';
 import '../styles/pagoArancel.css';
 
@@ -72,8 +74,8 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
   // -----------------------------------------------
   const cargarDatos = (): void => {
     Promise.all([
-      fetch(`http://localhost:3000/api/finanzas/${userId}`).then((res) => res.json()),
-      fetch(`http://localhost:3000/api/finanzas/historial/${userId}`).then((res) => res.json()),
+      fetch(`${API_BASE_URL}/api/finanzas/${userId}`).then((res) => res.json()),
+      fetch(`${API_BASE_URL}/api/finanzas/historial/${userId}`).then((res) => res.json()),
     ])
     .then(([datosFinanzas, datosHistorial]) => {
       if (!datosFinanzas.error) setFinanzas(datosFinanzas);
@@ -105,7 +107,7 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
     if (montoAPagar <= 0 || montoAPagar > finanzas.saldo_neto) return;
     
     try {
-      const respuesta = await fetch('http://localhost:3000/api/finanzas/pago', {
+      const respuesta = await fetch('${API_BASE_URL}/api/finanzas/pago', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
