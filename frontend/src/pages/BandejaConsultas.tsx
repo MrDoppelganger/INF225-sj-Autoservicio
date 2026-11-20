@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------
 
 import { useEffect, useState } from 'react';
+import { API_BASE_URL } from '../config';
 import { Header } from '../components/Header';
 
 // ---------------------Interfaces-----------------------------------
@@ -43,7 +44,7 @@ export const BandejaConsultas = ({ setVista }: BandejaConsultasProps) => {
   const [respuestaAdmin, setRespuestaAdmin] = useState<string>('');
 
   useEffect(() => {
-    fetch('${API_BASE_URL}/api/admin/consultas/pendientes')
+    fetch(`${API_BASE_URL}/api/admin/consultas/pendientes`)
       .then((res) => res.json())
       .then((datos) => {
         setConsultas(datos);

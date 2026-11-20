@@ -3,7 +3,7 @@
 // Plataforma: Portal de Autoservicio Institucional (UTFSM)
 // -------------------------------------------------------------------
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { useNavigate } from 'react-router-dom';
 import '../styles/obtenerCertificados.css';
@@ -12,7 +12,7 @@ import '../styles/obtenerCertificados.css';
 // Definición de las propiedades recibidas por el módulo de certificados
 // -------------------------------------------------------------------
 interface ObtenerCertificadosProps {
-  user: {
+  user?: {
     id: number;
     rut: string;
     perfil: string;
@@ -37,9 +37,20 @@ interface CertificadoItem {
 // ------------------Retorno----------------------------
 //   @returns {JSX.Element} Vista del catálogo de certificados.
 // -----------------------------------------------------
-export const ObtenerCertificados = ({ user, setVista }: ObtenerCertificadosProps) => {
+export const ObtenerCertificados = ({ user: propUser, setVista }: ObtenerCertificadosProps) => {
   const navigate = useNavigate();
   const [mensajePopup, setMensajePopup] = useState<string>('');
+
+  const usuarioAlmacenado = localStorage.getItem('user');
+  const user = propUser || (usuarioAlmacenado ? JSON.parse(usuarioAlmacenado) : null);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
+
+  if (!user) return null;
 
   // -------------------Función----------------------
   //   handleBack:

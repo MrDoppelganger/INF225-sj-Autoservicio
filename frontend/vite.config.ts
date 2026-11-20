@@ -10,6 +10,8 @@ export default defineConfig({
       usePolling: true,
     },
     allowedHosts: [
+      'localhost',
+      '127.0.0.1',
       'frontend-xaiw.onrender.com',
       '.onrender.com'
     ]

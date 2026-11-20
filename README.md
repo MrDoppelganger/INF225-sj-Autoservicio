@@ -61,7 +61,7 @@ El sistema está construido bajo una **arquitectura desacoplada cliente-servidor
 3. **Base de Datos (Capa de Persistencia):** Servidor relacional **PostgreSQL 15**, con integridad referencial y disparadores para la gestión de cuentas y pagos.
 4. **Infraestructura:** Todos los servicios se encuentran orquestados y aislados mediante **Docker Compose**.
 
-### <u> **Levantamiento**: </u>
+### <u> **Levantamiento en Localhost**: </u>
 *   Se recomienda asegurar que no se posee nada en los puertos ***3000***, ***5173*** y ***5432*** de localhost.
 *   Se debe abrir una terminal ubicada en la carpeta raiz del proyecto
 *   dentro de la terminal se levanta el proyecto ejecutando el comando: ***docker compose up --build***. En caso de problemas, ejecutar ***docker compose down -v*** antes.
@@ -70,6 +70,12 @@ El sistema está construido bajo una **arquitectura desacoplada cliente-servidor
     * **Servidor API (Backend):** [http://localhost:3000](http://localhost:3000)
     * **Base de Datos:** `localhost:5432` (Base: `proyecto_db`, Usuario: `usuario_dev`)
 
+### <u> **Levantamiento en web**
+Se utilizo el Host que te otorga render para el lavantamiento en web.
+*   Acceso web [Link](https://frontend-xaiw.onrender.com)
+    *   **Frontend:** [https://frontend-xaiw.onrender.com](https://frontend-xaiw.onrender.com)
+    *   **Backend:** [https://inf225-sj-autoservicio.onrender.com](https://inf225-sj-autoservicio.onrender.com)
+    
 ### 🔑 Credenciales de Prueba Predefinidas
 
 El sistema cuenta con usuarios semilla precargados en `init.sql` para validar diferentes perfiles y flujos:

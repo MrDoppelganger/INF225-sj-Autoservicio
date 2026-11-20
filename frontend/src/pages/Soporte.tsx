@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { API_BASE_URL } from '../config';
 import { Header } from '../components/Header';
 import '../styles/soporte.css';
 
@@ -74,7 +75,7 @@ export const Soporte = ({ userId, perfil, setVista }: SoporteProps) => {
     setTicketCreado(null);
 
     try {
-      const respuesta = await fetch('${API_BASE_URL}/api/consultas', {
+      const respuesta = await fetch(`${API_BASE_URL}/api/consultas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------
 
 import { useEffect, useState } from 'react';
+import { API_BASE_URL } from '../config';
 import { Header } from '../components/Header';
 import '../styles/bandejaNotificaciones.css';
 

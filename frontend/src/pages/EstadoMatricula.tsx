@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------
 
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import { Header } from '../components/Header';
 import '../styles/estadoMatricula.css';
 
@@ -86,7 +87,7 @@ export const EstadoMatricula = ({ userId, setVista }: EstadoMatriculaProps) => {
     setProcesandoPago(true);
 
     try {
-      const respuesta = await fetch('${API_BASE_URL}/api/matricula/pago', {
+      const respuesta = await fetch(`${API_BASE_URL}/api/matricula/pago`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

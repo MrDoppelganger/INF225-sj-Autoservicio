@@ -107,7 +107,7 @@ export const PagoArancel = ({ userId, setVista }: PagoArancelProps) => {
     if (montoAPagar <= 0 || montoAPagar > finanzas.saldo_neto) return;
     
     try {
-      const respuesta = await fetch('${API_BASE_URL}/api/finanzas/pago', {
+      const respuesta = await fetch(`${API_BASE_URL}/api/finanzas/pago`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

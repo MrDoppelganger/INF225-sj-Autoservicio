@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------
 
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import { Header } from '../components/Header';
 import { PerfilBancario } from './PerfilBancario';
 import '../styles/informacionPersonal.css';
@@ -70,7 +71,7 @@ export const InformacionPersonal = ({ userId, setVista }: InformacionPersonalPro
     const mensaje = prompt('Describe detalladamente tu inconveniente:');
     
     if (asunto && mensaje) {
-      fetch('${API_BASE_URL}/api/consultas', {
+      fetch(`${API_BASE_URL}/api/consultas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_usuario: userId, asunto, mensaje }),

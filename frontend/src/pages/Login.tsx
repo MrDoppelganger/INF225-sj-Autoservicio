@@ -57,7 +57,7 @@ export const Login = () => {
     setMensajeExito('');
 
     try {
-      const respuesta = await fetch('${API_BASE_URL}/api/login', {
+      const respuesta = await fetch(`${API_BASE_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rut, password }),

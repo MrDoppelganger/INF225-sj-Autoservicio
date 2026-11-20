@@ -3,8 +3,8 @@
 // Plataforma: Portal de Autoservicio Institucional (UTFSM)
 // -------------------------------------------------------------------
 
+import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
-
 import '../styles/perfilBancario.css';
 
 // ---------------------Interfaces-----------------------------------
