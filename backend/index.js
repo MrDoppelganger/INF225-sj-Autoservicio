@@ -83,6 +83,7 @@ app.get('/api/usuario/info/:id', async (req, res) => {
     const resultado = await pool.query(consultaSql, [id]);
     res.json(resultado.rows[0]);
   } catch (err) {
+    console.error('Error en /api/usuario/info/:id:', err);
     res.status(500).json({ error: 'Error al obtener perfil' });
   }
 });
@@ -107,6 +108,7 @@ app.get('/api/perfil/bancario/:idEstudiante', async (req, res) => {
     const resultado = await pool.query(consultaSql, [idEstudiante]);
     res.json(resultado.rows[0]);
   } catch (err) {
+    console.error('Error en /api/perfil/bancario/:idEstudiante:', err);
     res.status(500).json({ error: 'Error al obtener datos bancarios' });
   }
 });
@@ -139,6 +141,7 @@ app.put('/api/perfil/bancario/:idEstudiante', async (req, res) => {
     await pool.query(actualizacionSql, [banco, tipoCuenta, numeroCuenta, rutTitular, idEstudiante]);
     res.status(200).json({ success: true, message: 'Datos actualizados.' });
   } catch (err) {
+    console.error('Error en /api/perfil/bancario/:idEstudiante:', err);
     res.status(500).json({ success: false, message: 'Error al actualizar.' });
   }
 });
@@ -181,6 +184,7 @@ app.get('/api/finanzas/:idEstudiante', async (req, res) => {
 
     res.json(respuestaFinanzas);
   } catch (err) {
+    console.error('Error en /api/finanzas/:idEstudiante:', err);
     res.status(500).json({ error: 'Error al obtener finanzas' });
   }
 });
@@ -205,6 +209,7 @@ app.get('/api/finanzas/historial/:idEstudiante', async (req, res) => {
     const resultado = await pool.query(consultaSql, [idEstudiante]);
     res.json(resultado.rows);
   } catch (err) {
+    console.error('Error en /api/finanzas/historial/:idEstudiante:', err);
     res.status(500).json({ error: 'Error al obtener historial' });
   }
 });
@@ -250,6 +255,7 @@ app.post('/api/finanzas/pago', async (req, res) => {
     await pool.query('COMMIT');
     res.json({ success: true });
   } catch (e) {
+    console.error('Error en /api/finanzas/pago:', e);
     await pool.query('ROLLBACK');
     res.status(500).json({ error: 'Error procesando el pago' });
   }
@@ -276,6 +282,7 @@ app.get('/api/beneficios/:idEstudiante', async (req, res) => {
     const resultado = await pool.query(consultaSql, [idEstudiante]);
     res.json(resultado.rows);
   } catch (err) {
+    console.error('Error en /api/beneficios/:idEstudiante:', err);
     res.status(500).json({ error: 'Error al obtener beneficios' });
   }
 });
@@ -306,6 +313,7 @@ app.get('/api/matricula/:idEstudiante', async (req, res) => {
     const resultado = await pool.query(consultaSql, [idEstudiante]);
     res.json(resultado.rows);
   } catch (err) {
+    console.error('Error en /api/matricula/:idEstudiante:', err);
     res.status(500).json({ error: 'Error al obtener matrícula' });
   }
 });
@@ -379,6 +387,7 @@ app.post('/api/matricula/pago', async (req, res) => {
     await pool.query('COMMIT');
     res.json({ success: true, message: 'Pago de matrícula procesado con éxito' });
   } catch (err) {
+    console.error('Error en /api/matricula/pago:', err);
     await pool.query('ROLLBACK');
     res.status(500).json({ error: 'Error procesando el pago de matrícula' });
   }
@@ -458,6 +467,7 @@ app.post('/api/consultas', async (req, res) => {
     const consulta = resultado.rows[0];
     res.status(201).json({ success: true, id_consulta: consulta.id, consulta }); 
   } catch (err) {
+    console.error('Error en /api/consultas:', err);
     res.status(500).json({ success: false, message: 'Error al crear la consulta' });
   }
 });
@@ -482,6 +492,7 @@ app.get('/api/consultas/:idUsuario', async (req, res) => {
     const resultado = await pool.query(consultaSql, [idUsuario]);
     res.json(resultado.rows);
   } catch (err) {
+    console.error('Error en /api/consultas/:idUsuario:', err);
     res.status(500).json({ error: 'Error obteniendo consultas' });
   }
 });
@@ -515,6 +526,7 @@ app.get('/api/admin/consultas/pendientes', async (req, res) => {
     const resultado = await pool.query(consultaSql);
     res.json(resultado.rows);
   } catch (err) {
+    console.error('Error en /api/admin/consultas/pendientes:', err);
     res.status(500).json({ error: 'Error al obtener la bandeja de consultas pendientes' });
   }
 });
@@ -548,6 +560,7 @@ app.put('/api/admin/consultas/responder/:id', async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
+    console.error('Error en /api/admin/consultas/responder/:id:', err);
     res.status(500).json({ error: 'Error al guardar respuesta' });
   }
 });
@@ -601,6 +614,7 @@ app.get('/api/notificaciones/:idUsuario', async (req, res) => {
     const resultado = await pool.query(consultaSql, [idUsuario]);
     res.json(resultado.rows);
   } catch (err) {
+    console.error('Error en /api/notificaciones/:idUsuario:', err);
     res.status(500).json({ error: 'Error al obtener notificaciones' });
   }
 });
@@ -623,6 +637,7 @@ app.put('/api/notificaciones/leer/:id', async (req, res) => {
     await pool.query(actualizacionSql, [id]);
     res.json({ success: true, message: 'Notificación marcada como leída' });
   } catch (err) {
+    console.error('Error en /api/notificaciones/leer/:id:', err);
     res.status(500).json({ error: 'Error al actualizar estado de notificación' });
   }
 });
