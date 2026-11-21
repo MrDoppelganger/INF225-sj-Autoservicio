@@ -9,214 +9,962 @@
 }
 
 .cert-main {
-  max-width: 1000px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 35px 20px 60px 20px;
   width: 100%;
   box-sizing: border-box;
 }
 
 /* Cabecera del Módulo */
 .cert-header {
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 }
 
 .cert-header h2 {
   color: #003B70;
-  font-size: 2rem;
+  font-size: 2.1rem;
   margin: 0 0 8px 0;
+  font-weight: 700;
 }
 
 .cert-header p {
-  color: #666;
-  font-size: 1.1rem;
-  margin: 0 0 20px 0;
+  color: #555;
+  font-size: 1.05rem;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
 }
 
-/* Banner de Advertencia Moderno */
-.alerta-bloqueo {
-  background-color: #fffbeb; /* Fondo amarillo muy suave */
-  color: #92400e; /* Texto café oscuro para contraste y legibilidad */
-  padding: 16px 20px;
-  border-radius: 8px;
-  border-left: 4px solid #F1B929; /* Línea lateral institucional mostaza */
+/* Navegación por Pestañas (Tabs Institucionales) */
+.cert-tabs-navegacion {
   display: flex;
-  align-items: flex-start;
-  gap: 15px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
-  line-height: 1.5;
+  gap: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 2px;
+  margin-bottom: 25px;
+}
+
+.tab-btn {
+  background-color: #ffffff;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-bottom: none;
+  padding: 12px 24px;
+  border-radius: 8px 8px 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  position: relative;
+  top: 2px;
+}
+
+.tab-btn:hover {
+  background-color: #f8fafc;
+  color: #003B70;
+}
+
+.tab-btn.activa {
+  background-color: #003B70;
+  color: #ffffff;
+  border-color: #003B70;
+  box-shadow: 0 -2px 10px rgba(0, 59, 112, 0.15);
+}
+
+.tab-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.tab-contenido-animado {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tarjeta Formulario de Solicitud */
+.cert-card-formulario {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 28px 32px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+  margin-bottom: 35px;
+}
+
+.card-titulo-seccion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.card-titulo-seccion h3 {
+  margin: 0;
+  color: #003B70;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.card-subtitulo {
+  color: #64748b;
+  font-size: 0.98rem;
+  margin: 0 0 22px 0;
+}
+
+.badge-costo-cero {
+  background-color: #d1fae5;
+  color: #065f46;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-tramite-pago {
+  background-color: #fef3c7;
+  color: #92400e;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid #fde68a;
+}
+
+/* Grid de Formulario */
+.grid-formulario {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.form-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-grupo.span-completo {
+  grid-column: 1 / -1;
+}
+
+.form-grupo label {
+  color: #1e293b;
+  font-weight: 600;
   font-size: 0.95rem;
 }
 
-.alerta-icon {
-  width: 24px;
-  height: 24px;
-  color: #F1B929;
-  flex-shrink: 0;
+.input-select-usm,
+.input-text-usm {
+  padding: 11px 14px;
+  border-radius: 7px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.98rem;
+  color: #1e293b;
+  background-color: #ffffff;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-select-usm:focus,
+.input-text-usm:focus {
+  border-color: #003B70;
+  box-shadow: 0 0 0 3px rgba(0, 59, 112, 0.12);
+}
+
+.help-text {
+  color: #64748b;
+  font-size: 0.82rem;
   margin-top: 2px;
 }
 
-/* Tabla de Certificados SaaS */
-.lista-certificados-container {
-  background-color: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  overflow: hidden; /* Mantiene los bordes redondeados con la tabla adentro */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+.form-acciones {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 25px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 20px;
 }
 
-.tabla-certificados {
+.btn-usm-primario {
+  background-color: #003B70;
+  color: #ffffff;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-usm-primario:hover:not(:disabled) {
+  background-color: #00284d;
+  transform: translateY(-1px);
+}
+
+.btn-usm-primario:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Tarjeta Resumen Arancel Grados */
+.tarjeta-precio-grado {
+  background-color: #f8fafc;
+  border: 2px dashed #003B70;
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.precio-rotulo {
+  color: #475569;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.precio-valor {
+  color: #003B70;
+  font-size: 1.85rem;
+  font-weight: 800;
+  margin: 4px 0;
+}
+
+.precio-aclaracion {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+/* Alerta de Retiro Presencial (San Joaquín) */
+.alerta-retiro-presencial {
+  background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+  border: 1px solid #b9d7fb;
+  border-left: 6px solid #003B70;
+  border-radius: 12px;
+  padding: 22px 26px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  box-shadow: 0 4px 15px rgba(0, 59, 112, 0.05);
+}
+
+.retiro-icon-wrapper {
+  background-color: #003B70;
+  color: #ffffff;
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.retiro-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.retiro-info-texto h4 {
+  margin: 0 0 6px 0;
+  color: #003B70;
+  font-size: 1.22rem;
+  font-weight: 700;
+}
+
+.retiro-info-texto p {
+  margin: 0 0 14px 0;
+  color: #334155;
+  font-size: 0.96rem;
+  line-height: 1.5;
+}
+
+.retiro-detalles-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 20px;
+  background-color: #ffffff;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+/* Historial de Certificados */
+.cert-historial-seccion {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.historial-cabecera {
+  padding: 20px 26px;
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.historial-cabecera h3 {
+  margin: 0;
+  color: #003B70;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.contador-solicitudes {
+  background-color: #e2e8f0;
+  color: #334155;
+  padding: 4px 12px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.tabla-responsive-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.tabla-certificados-moderna {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
 }
 
-.tabla-certificados th {
-  background-color: #003B70; /* Azul USM para la cabecera */
+.tabla-certificados-moderna th {
+  background-color: #003B70;
   color: #ffffff;
-  padding: 16px 24px;
+  padding: 14px 20px;
+  font-size: 0.9rem;
   font-weight: 600;
-  font-size: 1.05rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
-.tabla-certificados td {
-  padding: 16px 24px;
+.tabla-certificados-moderna td {
+  padding: 15px 20px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
+  font-size: 0.95rem;
+  color: #334155;
 }
 
-.tabla-certificados tr:last-child td {
+.tabla-certificados-moderna tr:last-child td {
   border-bottom: none;
 }
 
-.tabla-certificados tr:hover td {
-  background-color: #f8fafc; /* Efecto hover sutil en la fila entera */
+.tabla-certificados-moderna tr:hover td {
+  background-color: #f8fafc;
 }
 
-.cert-nombre {
-  color: #1e293b;
-  font-weight: 500;
-  font-size: 1.05rem;
-}
-
-.cert-vacio {
-  text-align: center;
-  color: #64748b;
-  padding: 40px !important;
-  font-style: italic;
-}
-
-/* Badges de Costo (Etiquetas visuales) */
-.badge-gratis {
-  background-color: #def7ec;
-  color: #03543f;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: bold;
-}
-
-.badge-pago {
-  background-color: #f1f5f9;
-  color: #475569;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: bold;
-  border: 1px solid #e2e8f0;
-}
-
-/* Botón Solicitar */
-.btn-solicitar {
-  background-color: #ffffff;
+.text-usm {
   color: #003B70;
-  border: 2px solid #003B70;
-  padding: 8px 20px;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.detalle-celda {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #475569;
+}
+
+.codigo-chip {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  padding: 4px 8px;
   border-radius: 6px;
-  font-weight: bold;
+  font-family: monospace;
+  font-size: 0.88rem;
+  border: 1px solid #cbd5e1;
+}
+
+/* Badges de Estado */
+.badge-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge-pendiente {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-emitido {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-revision {
+  background-color: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.badge-por-pagar {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.badge-retiro {
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.dot-pulsante {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #2563eb;
+  animation: pulso 1.4s infinite;
+}
+
+.dot-naranja {
+  background-color: #ea580c;
+}
+
+@keyframes pulso {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.7; }
+}
+
+.mini-check,
+.mini-icon {
+  width: 15px;
+  height: 15px;
+}
+
+/* Botones de Acción en Tablas */
+.btn-accion-ver {
+  background-color: #003B70;
+  color: #ffffff;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.88rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.btn-solicitar:hover {
-  background-color: #003B70;
-  color: #ffffff;
+.btn-accion-ver:hover {
+  background-color: #002244;
 }
 
-/* Modal / Pop-Up de Éxito */
+.btn-pagar-ahora {
+  background-color: #F1B929;
+  color: #003B70;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(241, 185, 41, 0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-pagar-ahora:hover {
+  background-color: #dfa517;
+  transform: translateY(-1px);
+}
+
+.accion-retiro-box {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.retiro-label {
+  font-size: 0.78rem;
+  color: #047857;
+  font-weight: 700;
+}
+
+.btn-ver-comprobante {
+  background-color: #ffffff;
+  color: #003B70;
+  border: 1px solid #003B70;
+  padding: 5px 12px;
+  border-radius: 5px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-ver-comprobante:hover {
+  background-color: #f0f7ff;
+}
+
+.texto-espera {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 0.88rem;
+}
+
+/* Modales */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 59, 112, 0.4);
+  background-color: rgba(0, 35, 70, 0.45);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1100;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
-.pop-up-exito {
+/* Modal Pasarela de Pago */
+.modal-pasarela-pago {
   background-color: #ffffff;
-  padding: 40px 30px;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  width: 90%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-  animation: slideUpFade 0.3s ease-out forwards;
+  border-radius: 14px;
+  max-width: 540px;
+  width: 100%;
+  box-shadow: 0 25px 35px -5px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  animation: slideUp 0.25s ease-out;
 }
 
-/* Animación sutil de entrada para el Pop-up */
-@keyframes slideUpFade {
+@keyframes slideUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.exito-icon {
-  width: 60px;
-  height: 60px;
-  color: #059669; /* Verde esmeralda de éxito */
+.modal-cabecera-pago {
+  background-color: #003B70;
+  color: #ffffff;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.titulo-con-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.escudo-usm-mini {
+  background-color: #F1B929;
+  color: #003B70;
+  font-weight: 900;
+  font-size: 1.1rem;
+  padding: 6px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+.modal-cabecera-pago h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.modal-cabecera-pago p {
+  margin: 2px 0 0 0;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+
+.btn-cerrar-modal {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 1.3rem;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.btn-cerrar-modal:hover {
+  opacity: 1;
+}
+
+.resumen-cobro-box {
+  background-color: #f8fafc;
+  padding: 18px 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.resumen-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.resumen-item.total-item {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #cbd5e1;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.resumen-monto {
+  color: #003B70;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.metodos-pago-selector {
+  padding: 20px 24px;
+}
+
+.metodos-titulo {
+  display: block;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.opcion-medio-pago {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
   margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.opcion-medio-pago:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.opcion-medio-pago.seleccionado {
+  border-color: #003B70;
+  background-color: #f0f7ff;
+}
+
+.opcion-medio-pago input[type="radio"] {
+  margin-top: 4px;
+  accent-color: #003B70;
+}
+
+.metodo-nombre {
+  font-weight: 600;
+  color: #003B70;
+  font-size: 0.95rem;
+}
+
+.metodo-desc {
+  font-size: 0.83rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.modal-acciones-pago {
+  padding: 16px 24px 22px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn-cancelar {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 10px 20px;
+  border-radius: 7px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-confirmar-pago {
+  background-color: #003B70;
+  color: #ffffff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 7px;
+  font-weight: 700;
+  font-size: 0.98rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-confirmar-pago:hover:not(:disabled) {
+  background-color: #002547;
+}
+
+/* Modal de Éxito / Confirmación */
+.pop-up-exito {
+  background-color: #ffffff;
+  padding: 35px 30px;
+  border-radius: 14px;
+  text-align: center;
+  box-shadow: 0 25px 30px rgba(0, 0, 0, 0.12);
+  max-width: 480px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.exito-icon {
+  width: 55px;
+  height: 55px;
+  color: #059669;
 }
 
 .pop-up-exito h3 {
-  color: #1e293b;
   margin: 0;
-  font-size: 1.6rem;
+  color: #0f172a;
+  font-size: 1.45rem;
+  font-weight: 700;
 }
 
-.pop-up-exito p {
+.mensaje-principal {
   color: #475569;
-  font-size: 1.05rem;
-  line-height: 1.5;
-  margin: 0 0 15px 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.chip-codigo-box {
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.label-cod {
+  font-size: 0.78rem;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.valor-cod {
+  color: #003B70;
+  font-family: monospace;
+  font-size: 1.1rem;
+}
+
+.aviso-retiro-destacado {
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .btn-aceptar-popup {
-  background-color: #F1B929; /* Mostaza institucional para cerrar */
+  background-color: #F1B929;
   color: #003B70;
   border: none;
-  padding: 12px 24px;
+  padding: 12px 28px;
   border-radius: 8px;
-  font-weight: bold;
+  font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
   width: 100%;
+  margin-top: 6px;
   transition: all 0.2s ease;
 }
 
 .btn-aceptar-popup:hover {
-  background-color: #dca31f;
-  transform: translateY(-2px);
+  background-color: #dd9e13;
+}
+
+/* Modal Vista Previa de Documento Oficial */
+.modal-vista-certificado {
+  background-color: #ffffff;
+  border-radius: 12px;
+  max-width: 720px;
+  width: 100%;
+  box-shadow: 0 25px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.doc-preview-encabezado {
+  background-color: #003B70;
+  color: #ffffff;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.doc-logo-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.doc-escudo-usm {
+  background-color: #F1B929;
+  color: #003B70;
+  font-weight: 900;
+  font-size: 1rem;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.doc-institucion-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.doc-institucion-text strong {
+  font-size: 0.95rem;
+  letter-spacing: 0.4px;
+}
+
+.doc-institucion-text span {
+  font-size: 0.78rem;
+  color: #cbd5e1;
+}
+
+.btn-cerrar-preview {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.doc-preview-cuerpo {
+  padding: 30px 36px;
+  overflow-y: auto;
+  line-height: 1.6;
+  color: #1e293b;
+}
+
+.doc-titulo-principal {
+  color: #003B70;
+  font-size: 1.45rem;
+  text-align: center;
+  margin: 0 0 24px 0;
+  border-bottom: 2px solid #003B70;
+  padding-bottom: 12px;
+}
+
+.doc-parrafo-cuerpo {
+  font-size: 1.02rem;
+  margin-bottom: 18px;
+}
+
+.doc-clausula {
+  background-color: #f8fafc;
+  border-left: 3px solid #003B70;
+  padding: 12px 18px;
+  margin-bottom: 14px;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.98rem;
+}
+
+.doc-sello-verificacion {
+  margin-top: 30px;
+  padding-top: 18px;
+  border-top: 1px dashed #cbd5e1;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  color: #64748b;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.doc-preview-footer {
+  padding: 16px 24px;
+  background-color: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-descargar-simulado {
+  background-color: #003B70;
+  color: #ffffff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 7px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-descargar-simulado:hover {
+  background-color: #002547;
+}
+
+.spinner-micro {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* Responsividad */
@@ -225,14 +973,25 @@
     padding: 20px 15px;
   }
 
-  .tabla-certificados th, .tabla-certificados td {
-    padding: 12px 10px;
-    font-size: 0.95rem;
+  .grid-formulario {
+    grid-template-columns: 1fr;
   }
 
-  .alerta-bloqueo {
+  .alerta-retiro-presencial {
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+  }
+
+  .retiro-detalles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cert-tabs-navegacion {
+    flex-direction: column;
+    border-bottom: none;
+  }
+
+  .tab-btn {
+    border-radius: 8px;
+    border-bottom: 1px solid #cbd5e1;
   }
 }
