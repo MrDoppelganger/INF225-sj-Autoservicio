@@ -33,6 +33,13 @@ El proyecto es desarrollado bajo la metodología creación de una startup de sof
 
 ## Aspectos Tecnicos
 
+## 🛠️ Herramientas Utilizadas
+
+* **Control de Versiones:** GitHub
+* **Editor:** Visual Studio Code
+* **Lenguaje**: JavaScript, SQL, jSON, TypeScript
+* **Herramientas de levantamiento**: Docker, Render.
+
 ### Estructura del Repositorio
 
 ```bash

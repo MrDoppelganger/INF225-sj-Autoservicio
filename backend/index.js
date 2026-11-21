@@ -47,7 +47,8 @@ app.post('/api/login', async (req, res) => {
   const { rut, password } = req.body;
   try {
     const consultaSql = 
-      'SELECT id, rut, perfil, nombre, situacion_academica ' +
+      'SELECT id, rut, perfil, nombre, situacion_academica, ' +
+      'COALESCE(anio_ingreso, 2022) AS anio_ingreso ' +
       'FROM usuarios WHERE rut = $1 AND password = $2';
     const resultado = await pool.query(consultaSql, [rut, password]);
 
@@ -78,7 +79,8 @@ app.get('/api/usuario/info/:id', async (req, res) => {
     const { id } = req.params;
     const consultaSql = 
       'SELECT rut, nombre, perfil, carrera, situacion_academica, ' +
-      'email, email_personal, email_apoderado, telefono, direccion ' +
+      'email, email_personal, email_apoderado, telefono, direccion, ' +
+      'COALESCE(anio_ingreso, 2022) AS anio_ingreso ' +
       'FROM usuarios WHERE id = $1';
     const resultado = await pool.query(consultaSql, [id]);
     res.json(resultado.rows[0]);
@@ -249,7 +251,9 @@ app.post('/api/finanzas/pago', async (req, res) => {
     const insercionNotifSql = 
       'INSERT INTO notificaciones (id_usuario, titulo, mensaje, tipo) ' +
       'VALUES ($1, $2, $3, $4)';
-    const mensajeNotif = `Se ha recibido conforme su pago de arancel por un valor de $${Number(montoAbono).toLocaleString('es-CL')}.`;
+    const montoFormateado = Number(montoAbono).toLocaleString('es-CL');
+    const mensajeNotif = 
+      `Se ha recibido conforme su pago de arancel por un valor de $${montoFormateado}.`;
     await pool.query(insercionNotifSql, [idEstudiante, 'Abono Recibido', mensajeNotif, 'Financiera']);
 
     await pool.query('COMMIT');
@@ -381,8 +385,13 @@ app.post('/api/matricula/pago', async (req, res) => {
     const insercionNotifSql = 
       'INSERT INTO notificaciones (id_usuario, titulo, mensaje, tipo) ' +
       'VALUES ($1, $2, $3, $4)';
-    const mensajeNotif = `Se ha procesado exitosamente el pago de matrícula para el periodo ${matricula.periodo_academico} por un valor de $${Number(matricula.monto_matricula).toLocaleString('es-CL')}.`;
-    await pool.query(insercionNotifSql, [idEstudiante, 'Pago de Matrícula Recibido', mensajeNotif, 'Financiera']);
+    const montoMat = Number(matricula.monto_matricula).toLocaleString('es-CL');
+    const mensajeNotif = 
+      `Se ha procesado exitosamente el pago de matrícula para el periodo ` +
+      `${matricula.periodo_academico} por un valor de $${montoMat}.`;
+    await pool.query(insercionNotifSql, [
+      idEstudiante, 'Pago de Matrícula Recibido', mensajeNotif, 'Financiera'
+    ]);
 
     await pool.query('COMMIT');
     res.json({ success: true, message: 'Pago de matrícula procesado con éxito' });
@@ -593,7 +602,8 @@ app.get('/api/notificaciones/:idUsuario', async (req, res) => {
 
     for (const beneficio of resBeneficios.rows) {
       const tituloAlerta = 'Validación de Beca en Trámite';
-      const mensajeAlerta = `Su postulación a ${beneficio.nombre_beca} se encuentra en estado Pendiente de validación.`;
+      const mensajeAlerta = 
+        `Su postulación a ${beneficio.nombre_beca} se encuentra en estado Pendiente de validación.`;
 
       const existeAlertaSql = 
         'SELECT id FROM notificaciones ' +
@@ -649,6 +659,281 @@ app.put('/api/notificaciones/leer/:id', async (req, res) => {
 
 
 
+
+// --------------------Endpoint REST--------------------
+//   GET /api/certificados/catalogo
+//   Descripción:
+//       Retorna el catálogo oficial de certificados académicos
+//       disponibles en la USM clasificados por categoría.
+// -----------------Parámetros Query---------------------
+//       - categoria {string}: Filtro opcional ('gratis' o 'pago').
+// ------------------Respuestas HTTP---------------------
+//       - 200 OK: Listado de certificados del catálogo.
+//       - 500 Internal Error: Error al consultar la base de datos.
+// -----------------------------------------------------
+app.get('/api/certificados/catalogo', async (req, res) => {
+  try {
+    const { categoria } = req.query;
+    let consultaSql = 
+      'SELECT id, nombre_certificado, descripcion, arancel_costo, ' +
+      'destinado_a, categoria FROM catalogo_certificados';
+    const params = [];
+
+    if (categoria) {
+      consultaSql += ' WHERE categoria = $1';
+      params.push(categoria);
+    }
+
+    consultaSql += ' ORDER BY id ASC';
+    const resultado = await pool.query(consultaSql, params);
+    res.json(resultado.rows);
+  } catch (err) {
+    console.error('Error en /api/certificados/catalogo:', err);
+    res.status(500).json({ error: 'Error al consultar catálogo de certificados' });
+  }
+});
+
+// --------------------Endpoint REST--------------------
+//   GET /api/certificados/solicitudes/:idEstudiante
+//   Descripción:
+//       Obtiene el historial cronológico de certificados
+//       solicitados por un estudiante y su estado actual.
+// -----------------Parámetros Ruta----------------------
+//       - idEstudiante {number}: Identificador del estudiante.
+// -----------------Parámetros Query---------------------
+//       - tipo {string}: Filtro opcional ('gratis' o 'pago').
+// ------------------Respuestas HTTP---------------------
+//       - 200 OK: Lista de solicitudes con trazabilidad.
+//       - 500 Internal Error: Error al consultar el historial.
+// -----------------------------------------------------
+app.get('/api/certificados/solicitudes/:idEstudiante', async (req, res) => {
+  try {
+    const { idEstudiante } = req.params;
+    const { tipo } = req.query;
+
+    let consultaSql = 
+      'SELECT s.id, s.id_estudiante, s.id_certificado, s.codigo_verificacion, ' +
+      's.fecha_solicitud, s.estado, s.periodo, s.proposito, s.institucion_destino, ' +
+      's.tipo_practica, s.empresa_rut, s.empresa_nombre, s.fecha_inicio, ' +
+      's.fecha_termino, s.grado_tipo, s.costo, s.metodo_pago, s.es_de_pago, ' +
+      'COALESCE(c.nombre_certificado, s.grado_tipo, \'Certificado Académico\') ' +
+      'AS nombre_certificado ' +
+      'FROM solicitudes_certificados s ' +
+      'LEFT JOIN catalogo_certificados c ON s.id_certificado = c.id ' +
+      'WHERE s.id_estudiante = $1';
+
+    const params = [idEstudiante];
+
+    if (tipo === 'gratis') {
+      consultaSql += ' AND s.es_de_pago = FALSE';
+    } else if (tipo === 'pago') {
+      consultaSql += ' AND s.es_de_pago = TRUE';
+    }
+
+    consultaSql += ' ORDER BY s.fecha_solicitud DESC, s.id DESC';
+    const resultado = await pool.query(consultaSql, params);
+    res.json(resultado.rows);
+  } catch (err) {
+    console.error('Error en /api/certificados/solicitudes/:idEstudiante:', err);
+    res.status(500).json({ error: 'Error al consultar historial de solicitudes' });
+  }
+});
+
+// --------------------Endpoint REST--------------------
+//   POST /api/certificados/solicitar
+//   Descripción:
+//       Registra una nueva solicitud de certificado académico
+//       asignando código verificador y estado inicial.
+// -----------------Parámetros Body (JSON)---------------
+//       - idEstudiante {number}: Identificador del estudiante.
+//       - idCertificado {number}: ID del certificado (opcional).
+//       - esDePago {boolean}: Clasificación de pago o gratuito.
+//       - periodo {string}: Semestre o año cursado.
+//       - proposito {string}: Motivo de la solicitud.
+//       - institucionDestino {string}: Institución receptora.
+//       - tipoPractica {string}: Práctica industrial o profesional.
+//       - empresaRut {string}: RUT de la empresa empleadora.
+//       - empresaNombre {string}: Razón social de la empresa.
+//       - fechaInicio {string}: Fecha inicio práctica (YYYY-MM-DD).
+//       - fechaTermino {string}: Fecha fin práctica (YYYY-MM-DD).
+//       - gradoTipo {string}: Tipo de grado académico solicitado.
+//       - costo {number}: Valor del certificado según arancel.
+// ------------------Respuestas HTTP---------------------
+//       - 201 Created: Solicitud registrada satisfactoriamente.
+//       - 400 Bad Request: Faltan campos obligatorios.
+//       - 500 Internal Error: Error al registrar solicitud.
+// -----------------------------------------------------
+app.post('/api/certificados/solicitar', async (req, res) => {
+  try {
+    const {
+      idEstudiante,
+      idCertificado,
+      esDePago,
+      periodo,
+      proposito,
+      institucionDestino,
+      tipoPractica,
+      empresaRut,
+      empresaNombre,
+      fechaInicio,
+      fechaTermino,
+      gradoTipo,
+      costo,
+    } = req.body;
+
+    if (!idEstudiante) {
+      return res.status(400).json({ error: 'El ID de estudiante es obligatorio' });
+    }
+
+    // Generar código de verificación único institucional
+    const randomNum = Math.floor(10000 + Math.random() * 90000);
+    const anioActual = new Date().getFullYear();
+    let prefijo = 'DOC';
+    if (gradoTipo) prefijo = 'GRA';
+    else if (tipoPractica) prefijo = 'PR';
+    else if (periodo && periodo.includes('-')) prefijo = 'AR';
+    else if (periodo) prefijo = 'AM';
+    const codigoVerificacion = `USM-${anioActual}-${prefijo}-${randomNum}`;
+
+    // Estado inicial: 'En revisión' si es de pago, 'Pendiente' si es gratis
+    const estadoInicial = esDePago ? 'En revisión' : 'Pendiente';
+    const costoFinal = Number(costo) || 0;
+
+    const insercionSql = 
+      'INSERT INTO solicitudes_certificados (' +
+      'id_estudiante, id_certificado, codigo_verificacion, fecha_solicitud, ' +
+      'estado, periodo, proposito, institucion_destino, tipo_practica, ' +
+      'empresa_rut, empresa_nombre, fecha_inicio, fecha_termino, ' +
+      'grado_tipo, costo, metodo_pago, es_de_pago' +
+      ') VALUES ($1, $2, $3, NOW(), $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NULL, $15) ' +
+      'RETURNING *';
+
+    const valores = [
+      idEstudiante,
+      idCertificado || null,
+      codigoVerificacion,
+      estadoInicial,
+      periodo || null,
+      proposito || null,
+      institucionDestino || null,
+      tipoPractica || null,
+      empresaRut || null,
+      empresaNombre || null,
+      fechaInicio || null,
+      fechaTermino || null,
+      gradoTipo || null,
+      costoFinal,
+      Boolean(esDePago),
+    ];
+
+    const resultado = await pool.query(insercionSql, valores);
+    res.status(201).json({
+      success: true,
+      solicitud: resultado.rows[0],
+      codigoVerificacion,
+      message: 'Solicitud ingresada correctamente.',
+    });
+  } catch (err) {
+    console.error('Error en /api/certificados/solicitar:', err);
+    res.status(500).json({ error: 'Error al registrar la solicitud de certificado' });
+  }
+});
+
+// --------------------Endpoint REST--------------------
+//   PUT /api/certificados/actualizar-estado/:id
+//   Descripción:
+//       Actualiza el estado de tramitación de un certificado
+//       (ej: Pendiente -> Emitido, En revisión -> Por pagar).
+// -----------------Parámetros Ruta----------------------
+//       - id {number}: Identificador de la solicitud.
+// -----------------Parámetros Body (JSON)---------------
+//       - nuevoEstado {string}: Nuevo estado ('Emitido', etc).
+// ------------------Respuestas HTTP---------------------
+//       - 200 OK: Estado actualizado satisfactoriamente.
+//       - 400 Bad Request: Estado no proporcionado.
+//       - 500 Internal Error: Error al actualizar estado.
+// -----------------------------------------------------
+app.put('/api/certificados/actualizar-estado/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nuevoEstado } = req.body;
+
+    if (!nuevoEstado) {
+      return res.status(400).json({ error: 'El nuevo estado es requerido' });
+    }
+
+    const actualizacionSql = 
+      'UPDATE solicitudes_certificados SET estado = $1 WHERE id = $2 RETURNING *';
+    const resultado = await pool.query(actualizacionSql, [nuevoEstado, id]);
+
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ error: 'Solicitud no encontrada' });
+    }
+
+    res.json({
+      success: true,
+      solicitud: resultado.rows[0],
+      message: `Estado actualizado a "${nuevoEstado}".`,
+    });
+  } catch (err) {
+    console.error('Error en /api/certificados/actualizar-estado/:id:', err);
+    res.status(500).json({ error: 'Error al actualizar estado del certificado' });
+  }
+});
+
+// --------------------Endpoint REST--------------------
+//   POST /api/certificados/pagar
+//   Descripción:
+//       Procesa la mímica de pago de un certificado de grado,
+//       cambiando su estado a 'Disponible para retiro' y
+//       registrando la transacción en la tabla de pagos.
+// -----------------Parámetros Body (JSON)---------------
+//       - idSolicitud {number}: Identificador de la solicitud.
+//       - idEstudiante {number}: Identificador del estudiante.
+//       - metodoPago {string}: Medio (Webpay, Tarjeta, etc).
+//       - monto {number}: Valor monetario cancelado.
+// ------------------Respuestas HTTP---------------------
+//       - 200 OK: Pago procesado exitosamente.
+//       - 400 Bad Request: Faltan parámetros de transacción.
+//       - 500 Internal Error: Error al registrar el pago.
+// -----------------------------------------------------
+app.post('/api/certificados/pagar', async (req, res) => {
+  try {
+    const { idSolicitud, idEstudiante, metodoPago, monto } = req.body;
+
+    if (!idSolicitud || !idEstudiante || !metodoPago) {
+      return res.status(400).json({ error: 'Datos de pago incompletos' });
+    }
+
+    // 1. Actualizar estado de solicitud a 'Disponible para retiro' y método de pago
+    const updateSolicitudSql = 
+      'UPDATE solicitudes_certificados SET estado = \'Disponible para retiro\', ' +
+      'metodo_pago = $1 WHERE id = $2 RETURNING *';
+    const resultadoSolicitud = await pool.query(updateSolicitudSql, [metodoPago, idSolicitud]);
+
+    if (resultadoSolicitud.rows.length === 0) {
+      return res.status(404).json({ error: 'Solicitud de certificado no encontrada' });
+    }
+
+    // 2. Registrar la transacción en la tabla pagos
+    const insertPagoSql = 
+      'INSERT INTO pagos (' +
+      'id_estudiante, id_solicitud_cert, monto, tipo_pago, metodo_pago, ' +
+      'mes_referencia, emisor, estado' +
+      ') VALUES ($1, $2, $3, \'Certificado\', $4, \'Noviembre\', \'Pago Autoservicio\', \'Aprobado\')';
+
+    await pool.query(insertPagoSql, [idEstudiante, idSolicitud, monto || 0, metodoPago]);
+
+    res.json({
+      success: true,
+      solicitud: resultadoSolicitud.rows[0],
+      message: 'Pago registrado exitosamente. Documento disponible para retiro.',
+    });
+  } catch (err) {
+    console.error('Error en /api/certificados/pagar:', err);
+    res.status(500).json({ error: 'Error al procesar el pago del certificado' });
+  }
+});
 
 // -------------------Inicio del Servidor-----------------------------
 // Puesta en marcha de la escucha HTTP en el puerto parametrizado

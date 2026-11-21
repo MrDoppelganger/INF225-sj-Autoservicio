@@ -7,13 +7,14 @@
 --   Nombre: usuarios
 --   Descripción:
 --       Almacena los datos maestros de cuentas institucionales,
---       incluyendo perfiles académicos, datos de contacto y
---       cuenta bancaria registrada para transferencias.
+--       incluyendo perfiles académicos, datos de contacto,
+--       año de ingreso y cuenta bancaria para transferencias.
 -- ---------------Columnas principales--------------
 --       - id (PK): Identificador secuencial del usuario.
 --       - rut (UNIQUE): Identificador tributario nacional.
 --       - password: Clave institucional de acceso.
 --       - perfil: Rol asignado (Estudiante Regular, Admin, etc).
+--       - anio_ingreso: Año de ingreso institucional a la USM.
 -- -------------------------------------------------
 CREATE TABLE IF NOT EXISTS usuarios (
     id SERIAL PRIMARY KEY,
@@ -31,7 +32,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     banco VARCHAR(50),
     tipo_cuenta VARCHAR(50),
     numero_cuenta VARCHAR(20),
-    rut_titular VARCHAR(20)
+    rut_titular VARCHAR(20),
+    anio_ingreso INTEGER DEFAULT 2022
 );
 
 -- --------------------Tabla SQL--------------------
@@ -112,13 +114,15 @@ CREATE TABLE IF NOT EXISTS cuotas (
 --       - descripcion: Detalle y alcance del certificado.
 --       - arancel_costo: Valor monetario del trámite.
 --       - destinado_a: Perfil habilitado (Alumno, Exalumno).
+--       - categoria: Clasificación de cobro ('gratis', 'pago').
 -- -------------------------------------------------
 CREATE TABLE IF NOT EXISTS catalogo_certificados (
     id SERIAL PRIMARY KEY,
     nombre_certificado VARCHAR(100) NOT NULL,
     descripcion TEXT,
     arancel_costo NUMERIC(10, 2) NOT NULL,
-    destinado_a VARCHAR(50) NOT NULL
+    destinado_a VARCHAR(50) NOT NULL,
+    categoria VARCHAR(20) DEFAULT 'gratis'
 );
 
 -- --------------------Tabla SQL--------------------
@@ -132,7 +136,19 @@ CREATE TABLE IF NOT EXISTS catalogo_certificados (
 --       - id_certificado (FK -> catalogo_certificados.id).
 --       - codigo_verificacion (UNIQUE): Código alfanumérico.
 --       - fecha_solicitud: Momento en que se emitió el trámite.
---       - estado: Estado de tramitación (Emitido, Pendiente).
+--       - estado: Estado (Emitido, Pendiente, Por pagar, etc).
+--       - periodo: Semestre o año cursado correspondiente.
+--       - proposito: Motivo declarado de la solicitud.
+--       - institucion_destino: Institución receptora del trámite.
+--       - tipo_practica: Modalidad industrial o profesional.
+--       - empresa_rut: RUT de la empresa para seguro de práctica.
+--       - empresa_nombre: Razón social donde realiza práctica.
+--       - fecha_inicio: Fecha de inicio de la práctica.
+--       - fecha_termino: Fecha de finalización de la práctica.
+--       - grado_tipo: Grado académico solicitado.
+--       - costo: Arancel monetario cobrado por el documento.
+--       - metodo_pago: Medio de pago utilizado para trámite.
+--       - es_de_pago: Booleano que clasifica el tipo de cobro.
 -- -------------------------------------------------
 CREATE TABLE IF NOT EXISTS solicitudes_certificados (
     id SERIAL PRIMARY KEY,
@@ -140,7 +156,19 @@ CREATE TABLE IF NOT EXISTS solicitudes_certificados (
     id_certificado INTEGER REFERENCES catalogo_certificados(id) ON DELETE RESTRICT,
     codigo_verificacion VARCHAR(50) UNIQUE NOT NULL,
     fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    estado VARCHAR(50) DEFAULT 'Emitido'
+    estado VARCHAR(50) DEFAULT 'Pendiente',
+    periodo VARCHAR(20),
+    proposito VARCHAR(150),
+    institucion_destino VARCHAR(150),
+    tipo_practica VARCHAR(50),
+    empresa_rut VARCHAR(20),
+    empresa_nombre VARCHAR(150),
+    fecha_inicio DATE,
+    fecha_termino DATE,
+    grado_tipo VARCHAR(50),
+    costo NUMERIC(10, 2) DEFAULT 0.00,
+    metodo_pago VARCHAR(50),
+    es_de_pago BOOLEAN DEFAULT FALSE
 );
 
 -- --------------------Tabla SQL--------------------
@@ -280,7 +308,8 @@ INSERT INTO usuarios (
     rut, password, perfil, nombre, carrera,
     situacion_academica, email, email_personal,
     email_apoderado, telefono, direccion,
-    banco, tipo_cuenta, numero_cuenta, rut_titular
+    banco, tipo_cuenta, numero_cuenta, rut_titular,
+    anio_ingreso
 ) 
 VALUES 
 (
@@ -289,7 +318,8 @@ VALUES
     'Regular', 'estudiante.prueba@usm.cl',
     'personal@gmail.com', 'apoderado@gmail.com',
     '+56 9 1234 5678', 'Av. España 1680, Valparaíso',
-    'Banco Santander', 'Cuenta Corriente', '84729104', '12345678-9'
+    'Banco Santander', 'Cuenta Corriente', '84729104', '12345678-9',
+    2022
 ),
 (
     '98765432-1', '1234', 'Exalumno',
@@ -297,7 +327,8 @@ VALUES
     'Titulado', 'exalumno@usm.cl',
     'arq.pruebas@gmail.com', '',
     '+56 9 8765 4321', 'Calle Falsa 123',
-    'Banco de Chile', 'Cuenta Vista', '55291043', '98765432-1'
+    'Banco de Chile', 'Cuenta Vista', '55291043', '98765432-1',
+    2019
 ),
 (
     '11111111-1', '1234', 'Alumno Nuevo',
@@ -305,7 +336,8 @@ VALUES
     'Matriculado', 'nuevo@usm.cl',
     'nuevo.ingreso@hotmail.com', 'padre.ingreso@gmail.com',
     '+56 9 0000 0000', 'Santa Maria 123',
-    'Banco Estado', 'Cuenta RUT', '11111111', '11111111-1'
+    'Banco Estado', 'Cuenta RUT', '11111111', '11111111-1',
+    2026
 ),
 (
     '22222222-2', '1234', 'Exalumno',
@@ -313,7 +345,8 @@ VALUES
     'Titulado', 'ana.titulada@usm.cl',
     'ana.t@gmail.com', '',
     '+56 9 2222 2222', 'Av. Valparaíso 123',
-    'BCI', 'Cuenta Corriente', '19284756', '22222222-2'
+    'BCI', 'Cuenta Corriente', '19284756', '22222222-2',
+    2018
 ),
 (
     '33333333-3', '1234', 'Exalumno',
@@ -321,14 +354,16 @@ VALUES
     'Retirado', 'carlos.retirado@usm.cl',
     'carlos.r@gmail.com', '',
     '+56 9 3333 3333', 'Av. España 456',
-    'Banco Estado', 'Cuenta RUT', '33333333', '33333333-3'
+    'Banco Estado', 'Cuenta RUT', '33333333', '33333333-3',
+    2020
 ),
 (
     '99999999-9', 'admin123', 'Administrador',
     'Profesor Administrador', 'Casa Central',
     'Activo', 'admin.autoservicio@usm.cl',
     '', '', '', '',
-    '', '', '', ''
+    '', '', '', '',
+    2015
 )
 ON CONFLICT (rut) DO NOTHING;
 
@@ -436,45 +471,60 @@ VALUES
 -- Catálogo oficial de certificados académicos y aranceles asociados
 -- -----------------------------------------------------------------
 INSERT INTO catalogo_certificados (
-    nombre_certificado, descripcion, arancel_costo, destinado_a
+    nombre_certificado, descripcion, arancel_costo, destinado_a, categoria
 )
 VALUES
 (
     'Certificado de Alumno Regular',
-    'Acredita la calidad de alumno regular matriculado en el periodo académico vigente.',
+    'Acredita la calidad de alumno regular matriculado en el semestre seleccionado.',
     0.00,
-    'Estudiante Regular'
+    'Estudiante Regular',
+    'gratis'
 ),
 (
-    'Certificado de Matrícula',
-    'Certifica formalmente la inscripción y matrícula académica en la carrera cursada.',
+    'Certificado de Arancel y Matrícula',
+    'Certifica la matrícula y situación de arancel anual del estudiante en la USM.',
     0.00,
-    'Estudiante Regular'
+    'Estudiante Regular',
+    'gratis'
 ),
 (
-    'Concentración de Notas',
-    'Detalle completo de calificaciones, asignaturas cursadas y promedio ponderado histórico.',
-    3500.00,
-    'Todos'
+    'Seguro de Práctica',
+    'Acredita la cobertura del seguro institucional para práctica técnica o profesional.',
+    0.00,
+    'Estudiante Regular',
+    'gratis'
 ),
 (
-    'Certificado de Título',
-    'Documento legal oficial que acredita la obtención de título universitario o grado académico.',
-    5000.00,
-    'Exalumno'
+    'Certificado de Grado - Bachiller',
+    'Certificación oficial de la obtención del grado académico de Bachiller.',
+    15000.00,
+    'Todos',
+    'pago'
 ),
 (
-    'Certificado de Asignaturas Aprobadas',
-    'Certificación académica de asignaturas efectivamente aprobadas en el plan de estudios.',
-    3500.00,
-    'Exalumno'
+    'Certificado de Grado - Licenciatura',
+    'Certificación oficial de la obtención del grado académico de Licenciado.',
+    25000.00,
+    'Todos',
+    'pago'
+),
+(
+    'Certificado de Grado - Título de Ingeniería',
+    'Certificación oficial de la obtención del título profesional universitario.',
+    45000.00,
+    'Todos',
+    'pago'
 );
 
 -- -------------------Solicitudes de Certificados-------------------
 -- Registro de solicitudes y certificados generados con código
 -- -----------------------------------------------------------------
 INSERT INTO solicitudes_certificados (
-    id_estudiante, id_certificado, codigo_verificacion, fecha_solicitud, estado
+    id_estudiante, id_certificado, codigo_verificacion, fecha_solicitud,
+    estado, periodo, proposito, institucion_destino, tipo_practica,
+    empresa_rut, empresa_nombre, fecha_inicio, fecha_termino,
+    grado_tipo, costo, metodo_pago, es_de_pago
 )
 VALUES
 (
@@ -482,14 +532,69 @@ VALUES
     (SELECT id FROM catalogo_certificados WHERE nombre_certificado = 'Certificado de Alumno Regular'),
     'USM-2026-AR-84729',
     '2026-04-10 10:30:00',
-    'Emitido'
+    'Emitido',
+    '2026-1',
+    'Presentarse a JUNAEB',
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    0.00, NULL, FALSE
+),
+(
+    (SELECT id FROM usuarios WHERE rut = '12345678-9'),
+    (SELECT id FROM catalogo_certificados WHERE nombre_certificado = 'Certificado de Arancel y Matrícula'),
+    'USM-2026-AM-19283',
+    '2026-05-12 11:20:00',
+    'Emitido',
+    '2026',
+    'Para ser presentado a una institución',
+    'Banco Estado',
+    NULL, NULL, NULL, NULL, NULL, NULL,
+    0.00, NULL, FALSE
+),
+(
+    (SELECT id FROM usuarios WHERE rut = '12345678-9'),
+    (SELECT id FROM catalogo_certificados WHERE nombre_certificado = 'Seguro de Práctica'),
+    'USM-2026-PR-55412',
+    '2026-01-02 09:15:00',
+    'Emitido',
+    NULL, NULL, NULL,
+    'Práctica Profesional',
+    '76.987.654-3',
+    'Synopsys Chile SpA',
+    '2026-01-05',
+    '2026-02-27',
+    NULL,
+    0.00, NULL, FALSE
+),
+(
+    (SELECT id FROM usuarios WHERE rut = '12345678-9'),
+    (SELECT id FROM catalogo_certificados WHERE nombre_certificado = 'Certificado de Grado - Licenciatura'),
+    'USM-2026-LIC-44120',
+    '2026-05-20 14:00:00',
+    'Por pagar',
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    'Licenciatura',
+    25000.00, NULL, TRUE
+),
+(
+    (SELECT id FROM usuarios WHERE rut = '12345678-9'),
+    (SELECT id FROM catalogo_certificados WHERE nombre_certificado = 'Certificado de Grado - Bachiller'),
+    'USM-2026-BAC-10023',
+    '2026-03-10 16:20:00',
+    'Disponible para retiro',
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    'Bachiller',
+    15000.00, 'WebPay', TRUE
 ),
 (
     (SELECT id FROM usuarios WHERE rut = '22222222-2'),
-    (SELECT id FROM catalogo_certificados WHERE nombre_certificado = 'Certificado de Título'),
+    (SELECT id FROM catalogo_certificados 
+     WHERE nombre_certificado = 'Certificado de Grado - Título de Ingeniería'),
     'USM-2026-TIT-10928',
     '2026-05-15 16:45:00',
-    'Emitido'
+    'Disponible para retiro',
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    'Título de Ingeniería',
+    45000.00, 'Transferencia', TRUE
 );
 
 -- -------------------Datos Relacionales: Pagos---------------------
@@ -500,6 +605,19 @@ INSERT INTO pagos (
     monto, tipo_pago, metodo_pago, mes_referencia, emisor, fecha, estado
 ) 
 VALUES 
+(
+    (SELECT id FROM usuarios WHERE rut = '12345678-9'),
+    NULL,
+    NULL,
+    (SELECT id FROM solicitudes_certificados WHERE codigo_verificacion = 'USM-2026-BAC-10023'),
+    15000,
+    'Certificado',
+    'WebPay',
+    'Marzo',
+    'Pago Autoservicio',
+    '2026-03-10 16:25:00',
+    'Aprobado'
+), 
 (
     (SELECT id FROM usuarios WHERE rut = '12345678-9'),
     (SELECT c.id FROM cuotas c JOIN cuenta_estudiante ce ON c.id_cuenta = ce.id 
@@ -531,7 +649,9 @@ VALUES
 (
     (SELECT id FROM usuarios WHERE rut = '12345678-9'),
     NULL,
-    (SELECT id FROM matriculas WHERE id_estudiante = (SELECT id FROM usuarios WHERE rut = '12345678-9') AND periodo_academico = '2026-1'),
+    (SELECT id FROM matriculas 
+     WHERE id_estudiante = (SELECT id FROM usuarios WHERE rut = '12345678-9') 
+       AND periodo_academico = '2026-1'),
     NULL,
     150000,
     'Matrícula',
