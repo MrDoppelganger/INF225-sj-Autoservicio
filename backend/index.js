@@ -6,6 +6,35 @@
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
+const { randomBytes, createHmac, timingSafeEqual } = require('node:crypto');
+const claveSesionSoporte = process.env.SUPPORT_SESSION_SECRET || randomBytes(32);
+const firmarSesionSoporte = (payload) => createHmac('sha256', claveSesionSoporte).update(payload).digest('base64url');
+const crearSesionSoporte = (id) => {
+  const payload = Buffer.from(JSON.stringify({ id, exp: Date.now() + 8 * 60 * 60 * 1000 })).toString('base64url');
+  return `${payload}.${firmarSesionSoporte(payload)}`;
+};
+const administradorSoporte = async (req, res, next) => {
+  const token = req.get('Authorization')?.replace(/^Bearer /, '') || '';
+  const partes = token.split('.');
+  let sesion;
+  try {
+    if (partes.length !== 2) throw new Error('Sesión inválida');
+    const firma = Buffer.from(partes[1], 'base64url');
+    const esperada = Buffer.from(firmarSesionSoporte(partes[0]), 'base64url');
+    if (firma.length !== esperada.length || !timingSafeEqual(firma, esperada)) throw new Error('Firma inválida');
+    sesion = JSON.parse(Buffer.from(partes[0], 'base64url').toString());
+    if (!Number.isInteger(sesion.id) || !Number.isFinite(sesion.exp) || sesion.exp <= Date.now()) throw new Error('Sesión vencida');
+  } catch {
+    return res.status(401).json({ error: 'Cierra sesión y vuelve a ingresar para consultar este perfil.' });
+  }
+  try {
+    const usuario = await pool.query('SELECT perfil FROM usuarios WHERE id = $1', [sesion.id]);
+    if (usuario.rows[0]?.perfil !== 'Administrador') return res.status(403).json({ error: 'Solo el administrador puede consultar el remitente.' });
+    next();
+  } catch {
+    res.status(500).json({ error: 'No se pudo verificar la sesión.' });
+  }
+};
 
 const app = express();
 app.use(cors());
@@ -53,7 +82,7 @@ app.post('/api/login', async (req, res) => {
     const resultado = await pool.query(consultaSql, [rut, password]);
 
     if (resultado.rows.length > 0) {
-      res.json({ success: true, user: resultado.rows[0] });
+      res.json({ success: true, user: { ...resultado.rows[0], soporte_token: crearSesionSoporte(resultado.rows[0].id) } });
     } else {
       res.status(401).json({ success: false, message: 'Credenciales inválidas' });
     }
