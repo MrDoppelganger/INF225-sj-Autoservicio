@@ -77,7 +77,7 @@ app.post('/api/login', async (req, res) => {
   try {
     const consultaSql = 
       'SELECT id, rut, perfil, nombre, situacion_academica, ' +
-      'COALESCE(anio_ingreso, 2022) AS anio_ingreso ' +
+      'anio_ingreso ' +
       'FROM usuarios WHERE rut = $1 AND password = $2';
     const resultado = await pool.query(consultaSql, [rut, password]);
 
@@ -109,7 +109,7 @@ app.get('/api/usuario/info/:id', async (req, res) => {
     const consultaSql = 
       'SELECT rut, nombre, perfil, carrera, situacion_academica, ' +
       'email, email_personal, email_apoderado, telefono, direccion, ' +
-      'COALESCE(anio_ingreso, 2022) AS anio_ingreso ' +
+      'anio_ingreso ' +
       'FROM usuarios WHERE id = $1';
     const resultado = await pool.query(consultaSql, [id]);
     res.json(resultado.rows[0]);
@@ -576,6 +576,24 @@ const listarConsultasAdmin = async (req, res) => {
 app.get('/api/admin/consultas', listarConsultasAdmin);
 app.get('/api/admin/consultas/pendientes', listarConsultasAdmin);
 
+// Perfil limitado al remitente real del ticket y accesible solo por administrador.
+app.get('/api/admin/consultas/:id/remitente', administradorSoporte, async (req, res) => {
+  if (!/^[1-9]\d*$/.test(req.params.id)) return res.status(400).json({ error: 'Ticket inválido.' });
+  try {
+    const resultado = await pool.query(`
+      SELECT u.nombre, u.rut, u.email, u.carrera, u.situacion_academica, u.perfil
+      FROM consultas c JOIN usuarios u ON u.id = c.id_usuario WHERE c.id = $1
+    `, [req.params.id]);
+    if (!resultado.rowCount) return res.status(404).json({ error: 'Ticket no encontrado.' });
+    res.set('Cache-Control', 'no-store');
+    res.json(resultado.rows[0]);
+  } catch {
+    res.status(500).json({ error: 'No se pudo consultar el remitente.' });
+  }
+});
+
+
+
 // --------------------Endpoint REST--------------------
 //   PUT /api/admin/consultas/responder/:id
 //   Descripción:
@@ -987,4 +1005,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Backend corriendo en el puerto ${PORT}`);
 });
-
