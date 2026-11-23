@@ -4,7 +4,7 @@ import { Header } from '../components/Header';
 import '../styles/bandejaConsultas.css';
 
 interface BandejaConsultasProps {
-  user: { id: number; nombre: string; perfil: string };
+  user: { id: number; nombre: string; perfil: string; soporte_token?: string };
   setVista?: (v: string) => void;
 }
 interface Consulta {
@@ -18,8 +18,22 @@ interface Consulta {
   respuesta: string | null;
 }
 const API = `${API_BASE_URL}/api/admin/consultas`;
+interface PerfilRemitente {
+  nombre: string;
+  rut: string;
+  email: string;
+  carrera: string | null;
+  situacion_academica: string | null;
+  perfil: string;
+}
 
-export const BandejaConsultas = ({ setVista }: BandejaConsultasProps) => {
+export const BandejaConsultas = ({ user, setVista }: BandejaConsultasProps) => {
+  const dialogoPerfil = useRef<HTMLDialogElement>(null);
+  const solicitudPerfil = useRef<AbortController | null>(null);
+  const [perfilRemitente, setPerfilRemitente] = useState<PerfilRemitente | null>(null);
+  const [cargandoPerfil, setCargandoPerfil] = useState(false);
+  const [errorPerfil, setErrorPerfil] = useState('');
+  const [ticketPerfil, setTicketPerfil] = useState<number | null>(null);
   const [consultas, setConsultas] = useState<Consulta[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -30,6 +44,33 @@ export const BandejaConsultas = ({ setVista }: BandejaConsultasProps) => {
   const [idAtendiendo, setIdAtendiendo] = useState<number | null>(null);
   const [respuestaAdmin, setRespuestaAdmin] = useState('');
   const [enviando, setEnviando] = useState(false);
+
+  useEffect(() => () => solicitudPerfil.current?.abort(), []);
+
+  const abrirPerfil = async (ticket: Consulta) => {
+    solicitudPerfil.current?.abort();
+    const controller = new AbortController();
+    solicitudPerfil.current = controller;
+    setPerfilRemitente(null);
+    setErrorPerfil('');
+    setCargandoPerfil(true);
+    setTicketPerfil(ticket.id);
+    dialogoPerfil.current?.showModal();
+    try {
+      if (!user.soporte_token) throw new Error('Cierra sesión y vuelve a ingresar para consultar el perfil.');
+      const res = await fetch(`${API}/${ticket.id}/remitente`, {
+        signal: controller.signal,
+        headers: { Authorization: `Bearer ${user.soporte_token}` },
+      });
+      const datos = await res.json();
+      if (!res.ok) throw new Error(datos.error || 'No se pudo cargar el perfil.');
+      if (!controller.signal.aborted) setPerfilRemitente(datos);
+    } catch (err) {
+      if (!controller.signal.aborted) setErrorPerfil(err instanceof Error ? err.message : 'Error de conexión.');
+    } finally {
+      if (!controller.signal.aborted) setCargandoPerfil(false);
+    }
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -102,7 +143,7 @@ export const BandejaConsultas = ({ setVista }: BandejaConsultasProps) => {
                 <tr key={item.id} style={{ borderBottom: '1px solid #ddd' }}>
                   <td>#{item.id}</td>
                   <td>{new Date(item.fecha).toLocaleString('es-CL')}</td>
-                  <td>{item.nombre}</td><td>{item.correo_institucional}</td>
+                  <td><button className="ticket-ver-perfil" onClick={() => abrirPerfil(item)} aria-haspopup="dialog">{item.nombre}<span className="ticket-sr-only">: ver perfil del remitente del ticket #{item.id}</span></button></td><td>{item.correo_institucional}</td>
                   <td className="ticket-asunto">{item.asunto}</td>
                   <td>
                     <details className="ticket-desplegable">
@@ -138,8 +179,22 @@ export const BandejaConsultas = ({ setVista }: BandejaConsultasProps) => {
             </table>
           </div>
         )}
+        <dialog className="ticket-perfil-dialogo" ref={dialogoPerfil} aria-labelledby="titulo-perfil-remitente"
+          onClose={() => { solicitudPerfil.current?.abort(); }}>
+          <h2 id="titulo-perfil-remitente">Perfil del remitente</h2>
+          <p>Ticket #{ticketPerfil}</p>
+          {cargandoPerfil && <p role="status">Cargando perfil...</p>}
+          {errorPerfil && <p role="alert">{errorPerfil}</p>}
+          {perfilRemitente && <dl>
+            {[
+              ['Nombre', perfilRemitente.nombre], ['RUT', perfilRemitente.rut],
+              ['Correo institucional', perfilRemitente.email], ['Carrera', perfilRemitente.carrera],
+              ['Situación académica', perfilRemitente.situacion_academica], ['Tipo de usuario', perfilRemitente.perfil],
+            ].map(([etiqueta, valor]) => <div key={etiqueta}><dt>{etiqueta}</dt><dd>{valor || 'No registrado'}</dd></div>)}
+          </dl>}
+          <button autoFocus onClick={() => dialogoPerfil.current?.close()}>Cerrar</button>
+        </dialog>
       </main>
     </div>
   );
 };
-
