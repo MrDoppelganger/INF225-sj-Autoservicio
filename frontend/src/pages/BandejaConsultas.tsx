@@ -62,6 +62,8 @@ export const BandejaConsultas = ({ user, setVista }: BandejaConsultasProps) => {
         signal: controller.signal,
         headers: { Authorization: `Bearer ${user.soporte_token}` },
       });
+      const tipo = res.headers.get('content-type') || '';
+      if (!tipo.includes('application/json')) throw new Error('El servidor no tiene disponible el perfil. Actualiza y reinicia el backend.');
       const datos = await res.json();
       if (!res.ok) throw new Error(datos.error || 'No se pudo cargar el perfil.');
       if (!controller.signal.aborted) setPerfilRemitente(datos);
