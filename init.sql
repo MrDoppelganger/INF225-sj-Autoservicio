@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     tipo_cuenta VARCHAR(50),
     numero_cuenta VARCHAR(20),
     rut_titular VARCHAR(20),
-    anio_ingreso INTEGER DEFAULT 2022
+    anio_ingreso INTEGER
 );
 
 -- --------------------Tabla SQL--------------------
