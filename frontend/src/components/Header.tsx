@@ -62,7 +62,9 @@ export const Header = ({ setVista, perfil }: HeaderProps) => {
       </button>
       
       <nav className={`navbar-links ${menuAbierto ? 'abierto' : ''}`}>
-        <button onClick={() => handleNavegacion('info')}>Mi Perfil</button>
+        {perfil !== 'Administrador' && (
+          <button onClick={() => handleNavegacion('info')}>Mi Perfil</button>
+        )}
         {(perfil === 'Estudiante Regular' || perfil === 'Alumno Nuevo') && (
           <>
             <button onClick={() => handleNavegacion('pagos')}>Pago de Aranceles</button>

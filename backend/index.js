@@ -6,6 +6,35 @@
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
+const { randomBytes, createHmac, timingSafeEqual } = require('node:crypto');
+const claveSesionSoporte = process.env.SUPPORT_SESSION_SECRET || randomBytes(32);
+const firmarSesionSoporte = (payload) => createHmac('sha256', claveSesionSoporte).update(payload).digest('base64url');
+const crearSesionSoporte = (id) => {
+  const payload = Buffer.from(JSON.stringify({ id, exp: Date.now() + 8 * 60 * 60 * 1000 })).toString('base64url');
+  return `${payload}.${firmarSesionSoporte(payload)}`;
+};
+const administradorSoporte = async (req, res, next) => {
+  const token = req.get('Authorization')?.replace(/^Bearer /, '') || '';
+  const partes = token.split('.');
+  let sesion;
+  try {
+    if (partes.length !== 2) throw new Error('Sesión inválida');
+    const firma = Buffer.from(partes[1], 'base64url');
+    const esperada = Buffer.from(firmarSesionSoporte(partes[0]), 'base64url');
+    if (firma.length !== esperada.length || !timingSafeEqual(firma, esperada)) throw new Error('Firma inválida');
+    sesion = JSON.parse(Buffer.from(partes[0], 'base64url').toString());
+    if (!Number.isInteger(sesion.id) || !Number.isFinite(sesion.exp) || sesion.exp <= Date.now()) throw new Error('Sesión vencida');
+  } catch {
+    return res.status(401).json({ error: 'Cierra sesión y vuelve a ingresar para consultar este perfil.' });
+  }
+  try {
+    const usuario = await pool.query('SELECT perfil FROM usuarios WHERE id = $1', [sesion.id]);
+    if (usuario.rows[0]?.perfil !== 'Administrador') return res.status(403).json({ error: 'Solo el administrador puede consultar el remitente.' });
+    next();
+  } catch {
+    res.status(500).json({ error: 'No se pudo verificar la sesión.' });
+  }
+};
 
 const app = express();
 app.use(cors());
@@ -53,7 +82,7 @@ app.post('/api/login', async (req, res) => {
     const resultado = await pool.query(consultaSql, [rut, password]);
 
     if (resultado.rows.length > 0) {
-      res.json({ success: true, user: resultado.rows[0] });
+      res.json({ success: true, user: { ...resultado.rows[0], soporte_token: crearSesionSoporte(resultado.rows[0].id) } });
     } else {
       res.status(401).json({ success: false, message: 'Credenciales inválidas' });
     }
@@ -545,7 +574,11 @@ app.get('/api/consultas/:idUsuario', async (req, res) => {
 //       - 200 OK: Lista de tickets pendientes de resolver.
 //       - 500 Internal Error: Error al consultar bandeja.
 // -----------------------------------------------------
-app.get('/api/admin/consultas/pendientes', async (req, res) => {
+const listarConsultasAdmin = async (req, res) => {
+  const estado = req.path.endsWith('/pendientes') ? 'Pendiente' : req.query.estado;
+  if (estado && !['Pendiente', 'Respondida'].includes(estado)) {
+    return res.status(400).json({ error: 'Estado de consulta inválido' });
+  }
   try {
     const consultaSql = `
       SELECT 
@@ -553,20 +586,23 @@ app.get('/api/admin/consultas/pendientes', async (req, res) => {
         c.fecha, 
         c.asunto, 
         c.mensaje, 
+        c.estado,
+        c.respuesta,
         u.nombre, 
         u.email AS correo_institucional
       FROM consultas c
       JOIN usuarios u ON c.id_usuario = u.id
-      WHERE c.estado = 'Pendiente'
-      ORDER BY c.fecha ASC;
+      ${estado ? 'WHERE c.estado = $1' : ''}
+      ORDER BY c.fecha ASC, c.id ASC;
     `;
-    const resultado = await pool.query(consultaSql);
+    const resultado = await pool.query(consultaSql, estado ? [estado] : []);
     res.json(resultado.rows);
   } catch (err) {
-    console.error('Error en /api/admin/consultas/pendientes:', err);
     res.status(500).json({ error: 'Error al obtener la bandeja de consultas pendientes' });
   }
-});
+};
+app.get('/api/admin/consultas', listarConsultasAdmin);
+app.get('/api/admin/consultas/pendientes', listarConsultasAdmin);
 
 // --------------------Endpoint REST--------------------
 //   PUT /api/admin/consultas/responder/:id
@@ -583,12 +619,22 @@ app.get('/api/admin/consultas/pendientes', async (req, res) => {
 // -----------------------------------------------------
 app.put('/api/admin/consultas/responder/:id', async (req, res) => {
   const { respuesta } = req.body;
+  if (typeof respuesta !== 'string' || !respuesta.trim()) {
+    return res.status(400).json({ error: 'La respuesta no puede estar vacía.' });
+  }
+  if (!/^[1-9]\d*$/.test(req.params.id)) {
+    return res.status(400).json({ error: 'Identificador de consulta inválido' });
+  }
   const correoAlumno = req.body.correo_alumno || req.body.correoAlumno;
 
   try {
     const actualizacionSql = 
-      "UPDATE consultas SET estado = 'Respondida', respuesta = $1 WHERE id = $2";
-    await pool.query(actualizacionSql, [respuesta, req.params.id]);
+      "UPDATE consultas SET estado = 'Respondida', respuesta = $1 WHERE id = $2 AND estado = 'Pendiente' RETURNING *";
+    const resultado = await pool.query(actualizacionSql, [respuesta.trim(), req.params.id]);
+    if (!resultado.rowCount) {
+      const existente = await pool.query('SELECT id FROM consultas WHERE id = $1', [req.params.id]);
+      return res.status(existente.rowCount ? 409 : 404).json({ error: existente.rowCount ? 'La consulta ya fue respondida' : 'Consulta no encontrada' });
+    }
 
     // Simulación de despacho de correo electrónico automático
     console.log(`\n📧 [EMAIL AUTOMÁTICO] Enviado a: ${correoAlumno}`);
@@ -597,7 +643,6 @@ app.put('/api/admin/consultas/responder/:id', async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    console.error('Error en /api/admin/consultas/responder/:id:', err);
     res.status(500).json({ error: 'Error al guardar respuesta' });
   }
 });
@@ -993,3 +1038,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Backend corriendo en el puerto ${PORT}`);
 });
+
