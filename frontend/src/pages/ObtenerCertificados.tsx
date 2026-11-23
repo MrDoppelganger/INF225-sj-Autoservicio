@@ -508,7 +508,20 @@ export const ObtenerCertificados = ({ user: propUser, setVista }: ObtenerCertifi
       <main className="main-content cert-main">
         {/* Cabecera del Módulo */}
         <section className="cert-header">
-          <h2>Portal de Certificados Académicos</h2>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <button
+              className="btn-regreso-dashboard"
+              onClick={() => handleBack('landing')}
+              aria-label="Volver al menú principal"
+              title="Volver al menú principal"
+            >
+              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </button>
+            <h2>Portal de Certificados Académicos</h2>
+          </div>
           <p>
             Emisión digital de certificados sin costo y tramitación oficial de
             certificados de grado académico de la Universidad Técnica Federico Santa María.

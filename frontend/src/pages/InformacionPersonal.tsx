@@ -128,7 +128,20 @@ export const InformacionPersonal = ({ userId, setVista }: InformacionPersonalPro
       
       <main className="main-content">
         <section className="profile-header">
-          <h2>Mi Perfil Académico</h2>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <button
+              className="btn-regreso-dashboard"
+              onClick={() => setVista('landing')}
+              aria-label="Volver al menú principal"
+              title="Volver al menú principal"
+            >
+              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </button>
+            <h2>Mi Perfil Académico</h2>
+          </div>
           <p>Consulta tus datos de contacto y situación académica actual.</p>
         </section>
 

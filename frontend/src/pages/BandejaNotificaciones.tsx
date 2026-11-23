@@ -140,7 +140,20 @@ export const BandejaNotificaciones = ({ userId, user, setVista }: BandejaNotific
 
       <main className="main-content notificaciones-main">
         <section className="notificaciones-header">
-          <h2>Bandeja de Notificaciones</h2>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <button
+              className="btn-regreso-dashboard"
+              onClick={() => (setVista ? setVista('landing') : null)}
+              aria-label="Volver al menú principal"
+              title="Volver al menú principal"
+            >
+              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </button>
+            <h2>Bandeja de Notificaciones</h2>
+          </div>
           <p>Revisa tus alertas académicas, confirmaciones de pagos y avisos de beneficios.</p>
         </section>
 

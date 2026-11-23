@@ -21,6 +21,7 @@ interface MatriculaItem {
   id_estudiante: number;
   periodo_academico: string;
   monto_matricula: string | number;
+  saldo_pendiente?: string | number;
   estado_matricula: string;
   fecha_limite: string;
 }
@@ -40,6 +41,7 @@ export const EstadoMatricula = ({ userId, setVista }: EstadoMatriculaProps) => {
   const [procesandoPago, setProcesandoPago] = useState<boolean>(false);
   const [metodoSeleccionado, setMetodoSeleccionado] = useState<string>('WebPay');
   const [modalExito, setModalExito] = useState<string>('');
+  const [montoAbono, setMontoAbono] = useState<number | ''>('');
 
   // -------------------Función----------------------
   //   cargarMatriculas:
@@ -73,6 +75,15 @@ export const EstadoMatricula = ({ userId, setVista }: EstadoMatriculaProps) => {
   const matriculaPendiente = matriculas.find((m) => m.estado_matricula === 'Pendiente');
   const matriculaActiva = matriculaPendiente || matriculas[0] || null;
 
+  const saldoMatriculaPendiente = matriculaPendiente
+    ? Number(matriculaPendiente.saldo_pendiente ?? matriculaPendiente.monto_matricula)
+    : 0;
+  const esMontoValido =
+    typeof montoAbono === 'number' &&
+    Number.isInteger(montoAbono) &&
+    montoAbono > 0 &&
+    montoAbono <= saldoMatriculaPendiente;
+
   // -------------------Función----------------------
   //   handlePagarMatricula:
   //       Ejecuta la mímica de pago de la matrícula pendiente
@@ -93,6 +104,7 @@ export const EstadoMatricula = ({ userId, setVista }: EstadoMatriculaProps) => {
         body: JSON.stringify({
           id_estudiante: userId,
           id_matricula: idMatricula,
+          monto_abono: monto,
           metodo_pago: metodoSeleccionado,
         }),
       });
@@ -101,9 +113,10 @@ export const EstadoMatricula = ({ userId, setVista }: EstadoMatriculaProps) => {
 
       if (respuesta.ok && datos.success) {
         setModalExito(
-          `¡Pago Exitoso! Se ha cancelado la matrícula por un monto de ` +
+          `¡Pago Exitoso! Se ha realizado un pago a la matrícula por un monto de ` +
           `$${Number(monto).toLocaleString()} a través de ${metodoSeleccionado}.`
         );
+        setMontoAbono('');
         cargarMatriculas();
       } else {
         alert(datos.error || 'Ocurrió un error al procesar el pago de matrícula.');
@@ -147,7 +160,20 @@ export const EstadoMatricula = ({ userId, setVista }: EstadoMatriculaProps) => {
 
       <div className="modulo-matricula">
         <header className="matricula-header">
-          <h2>Gestión y Pago de Matrícula</h2>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <button
+              className="btn-regreso-dashboard"
+              onClick={() => setVista('landing')}
+              aria-label="Volver al menú principal"
+              title="Volver al menú principal"
+            >
+              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </button>
+            <h2>Gestión y Pago de Matrícula</h2>
+          </div>
           <p>
             Revisa el estado de tu matrícula académica institucional para el periodo vigente
             y realiza el pago en línea.
@@ -188,6 +214,13 @@ export const EstadoMatricula = ({ userId, setVista }: EstadoMatriculaProps) => {
                   {formatearFecha(matriculaActiva.fecha_limite)}
                 </span>
               </div>
+
+              <div className="tarjeta-resumen-matricula total">
+                <span className="tarjeta-label">Saldo Pendiente Neto</span>
+                <span className="tarjeta-valor">
+                  ${Number(matriculaActiva.saldo_pendiente ?? (matriculaActiva.estado_matricula === 'Pagada' ? 0 : matriculaActiva.monto_matricula)).toLocaleString()}
+                </span>
+              </div>
             </div>
 
             {/* Panel de Pago si está Pendiente */}
@@ -197,8 +230,41 @@ export const EstadoMatricula = ({ userId, setVista }: EstadoMatriculaProps) => {
                 <p>
                   Selecciona tu medio de pago preferido para formalizar la matrícula del periodo{' '}
                   <strong>{matriculaPendiente.periodo_academico}</strong> por un total de{' '}
-                  <strong>${Number(matriculaPendiente.monto_matricula).toLocaleString()}</strong>.
+                  <strong>${Number(matriculaPendiente.monto_matricula).toLocaleString()}</strong>
+                  {Number(matriculaPendiente.saldo_pendiente ?? matriculaPendiente.monto_matricula) < Number(matriculaPendiente.monto_matricula) && (
+                    <span> (Saldo pendiente: ${Number(matriculaPendiente.saldo_pendiente).toLocaleString()})</span>
+                  )}.
                 </p>
+
+                <div className="form-group-matricula">
+                  <label>Monto a abonar (Abono Global):</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max={saldoMatriculaPendiente}
+                    step="1"
+                    className="input-monto-matricula"
+                    value={montoAbono}
+                    onChange={(e) => {
+                      const val = e.target.value.trim();
+                      if (val === '') {
+                        setMontoAbono('');
+                        return;
+                      }
+                      // Filtro de caracteres no numéricos o negativos
+                      if (!/^\d+$/.test(val)) return;
+                      const num = Number(val);
+                      setMontoAbono(num);
+                    }}
+                    onKeyDown={(e) => {
+                      // Prevenir signos negativos, decimales o exponente 'e'
+                      if (['e', 'E', '+', '-', '.', ','].includes(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                    placeholder="Ej: 50000"
+                  />
+                </div>
 
                 <div className="metodos-pago-grid">
                   {['WebPay', 'Banco Santander', 'Banco Estado', 'Transferencia'].map((metodo) => (
@@ -226,15 +292,16 @@ export const EstadoMatricula = ({ userId, setVista }: EstadoMatriculaProps) => {
                   onClick={() => 
                     handlePagarMatricula(
                       matriculaPendiente.id,
-                      Number(matriculaPendiente.monto_matricula)
+                      Number(montoAbono)
                     )
                   }
-                  disabled={procesandoPago}
+                  disabled={!esMontoValido || procesandoPago}
                 >
                   {procesandoPago
                     ? 'Procesando Transacción...'
-                    : `Pagar $${Number(matriculaPendiente.monto_matricula).toLocaleString()}` +
-                      ` con ${metodoSeleccionado}`
+                    : esMontoValido
+                    ? `Pagar $${Number(montoAbono).toLocaleString()} con ${metodoSeleccionado}`
+                    : 'Ingresa un monto válido'
                   }
                 </button>
               </div>

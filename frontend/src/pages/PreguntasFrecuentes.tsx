@@ -208,7 +208,20 @@ export const PreguntasFrecuentes = () => {
 
       <main className="faq-main">
         <section className="faq-encabezado">
-          <h2 className="faq-titulo">Preguntas frecuentes</h2>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+            <button
+              className="btn-regreso-dashboard"
+              onClick={() => navigate('/dashboard')}
+              aria-label="Volver al menú principal"
+              title="Volver al menú principal"
+            >
+              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </button>
+            <h2 className="faq-titulo" style={{ margin: 0 }}>Preguntas frecuentes</h2>
+          </div>
           <p>
             Encuentra respuestas a las consultas más habituales del
             Portal de Autoservicio.

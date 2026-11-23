@@ -311,9 +311,12 @@ app.get('/api/matricula/:idEstudiante', async (req, res) => {
   try {
     const idEstudiante = req.params.idEstudiante || req.params.id_estudiante;
     const consultaSql = 
-      'SELECT id, id_estudiante, periodo_academico, monto_matricula, ' +
-      'estado_matricula, fecha_limite ' +
-      'FROM matriculas WHERE id_estudiante = $1 ORDER BY periodo_academico DESC';
+      'SELECT m.id, m.id_estudiante, m.periodo_academico, m.monto_matricula, ' +
+      'CASE WHEN m.estado_matricula = \'Pagada\' THEN 0 ' +
+      'ELSE GREATEST(0, m.monto_matricula - COALESCE((SELECT SUM(p.monto) FROM pagos p WHERE p.id_matricula = m.id), 0)) ' +
+      'END AS saldo_pendiente, ' +
+      'm.estado_matricula, m.fecha_limite ' +
+      'FROM matriculas m WHERE m.id_estudiante = $1 ORDER BY m.periodo_academico DESC';
     const resultado = await pool.query(consultaSql, [idEstudiante]);
     res.json(resultado.rows);
   } catch (err) {
@@ -331,6 +334,7 @@ app.get('/api/matricula/:idEstudiante', async (req, res) => {
 // -----------------Parámetros Body (JSON)---------------
 //       - id_estudiante {number}: Identificador del alumno.
 //       - id_matricula {number}: Identificador de la matrícula.
+//       - monto_abono {number}: Monto a abonar (parcial o total).
 //       - metodo_pago {string}: Medio de pago (ej: WebPay).
 // ------------------Respuestas HTTP---------------------
 //       - 200 OK: Pago procesado exitosamente.
@@ -342,13 +346,16 @@ app.post('/api/matricula/pago', async (req, res) => {
   const idEstudiante = req.body.id_estudiante || req.body.idEstudiante;
   const idMatricula = req.body.id_matricula || req.body.idMatricula;
   const metodoPago = req.body.metodo_pago || req.body.metodoPago || 'WebPay';
+  const montoAbonoInput = req.body.monto_abono ?? req.body.montoAbono;
 
   try {
     await pool.query('BEGIN');
 
     const consultaMatricula = 
-      'SELECT id, monto_matricula, periodo_academico, estado_matricula ' +
-      'FROM matriculas WHERE id = $1 AND id_estudiante = $2 FOR UPDATE';
+      'SELECT m.id, m.monto_matricula, ' +
+      'GREATEST(0, m.monto_matricula - COALESCE((SELECT SUM(p.monto) FROM pagos p WHERE p.id_matricula = m.id), 0)) AS saldo_pendiente, ' +
+      'm.periodo_academico, m.estado_matricula ' +
+      'FROM matriculas m WHERE m.id = $1 AND m.id_estudiante = $2 FOR UPDATE';
     const resultadoMatricula = await pool.query(consultaMatricula, [idMatricula, idEstudiante]);
 
     if (resultadoMatricula.rows.length === 0) {
@@ -357,14 +364,30 @@ app.post('/api/matricula/pago', async (req, res) => {
     }
 
     const matricula = resultadoMatricula.rows[0];
-    if (matricula.estado_matricula === 'Pagada') {
+    if (matricula.estado_matricula === 'Pagada' || Number(matricula.saldo_pendiente) <= 0) {
       await pool.query('ROLLBACK');
       return res.status(400).json({ error: 'La matrícula ya se encuentra pagada' });
     }
 
-    const actualizarMatriculaSql = 
-      "UPDATE matriculas SET estado_matricula = 'Pagada' WHERE id = $1";
-    await pool.query(actualizarMatriculaSql, [idMatricula]);
+    const deudaActual = Number(matricula.saldo_pendiente);
+    const montoAbono = montoAbonoInput !== undefined ? Number(montoAbonoInput) : deudaActual;
+
+    // Validar que el monto sea un número positivo y menor o igual a la deuda (CP-4)
+    if (!Number.isFinite(montoAbono) || montoAbono <= 0 || montoAbono > deudaActual) {
+      await pool.query('ROLLBACK');
+      return res.status(400).json({
+        error: `El monto a pagar debe ser mayor a 0 y menor o igual a $${deudaActual.toLocaleString('es-CL')}`,
+      });
+    }
+
+    const nuevoSaldo = deudaActual - montoAbono;
+    const nuevoEstado = nuevoSaldo <= 0 ? 'Pagada' : 'Pendiente';
+
+    if (nuevoEstado === 'Pagada') {
+      const actualizarMatriculaSql = 
+        "UPDATE matriculas SET estado_matricula = 'Pagada' WHERE id = $1";
+      await pool.query(actualizarMatriculaSql, [idMatricula]);
+    }
 
     const insertarPagoSql = 
       'INSERT INTO pagos (id_estudiante, id_matricula, monto, tipo_pago, ' +
@@ -373,7 +396,7 @@ app.post('/api/matricula/pago', async (req, res) => {
     await pool.query(insertarPagoSql, [
       idEstudiante,
       idMatricula,
-      matricula.monto_matricula,
+      montoAbono,
       'Matrícula',
       metodoPago,
       matricula.periodo_academico,
@@ -385,16 +408,21 @@ app.post('/api/matricula/pago', async (req, res) => {
     const insercionNotifSql = 
       'INSERT INTO notificaciones (id_usuario, titulo, mensaje, tipo) ' +
       'VALUES ($1, $2, $3, $4)';
-    const montoMat = Number(matricula.monto_matricula).toLocaleString('es-CL');
+    const montoFormateado = Number(montoAbono).toLocaleString('es-CL');
     const mensajeNotif = 
-      `Se ha procesado exitosamente el pago de matrícula para el periodo ` +
-      `${matricula.periodo_academico} por un valor de $${montoMat}.`;
+      `Se ha procesado un abono a su matrícula del periodo ${matricula.periodo_academico} por $${montoFormateado}.`;
+
     await pool.query(insercionNotifSql, [
       idEstudiante, 'Pago de Matrícula Recibido', mensajeNotif, 'Financiera'
     ]);
 
     await pool.query('COMMIT');
-    res.json({ success: true, message: 'Pago de matrícula procesado con éxito' });
+    res.json({
+      success: true,
+      message: 'Pago de matrícula procesado con éxito',
+      nuevoSaldo,
+      estado: nuevoEstado,
+    });
   } catch (err) {
     console.error('Error en /api/matricula/pago:', err);
     await pool.query('ROLLBACK');
@@ -496,7 +524,7 @@ app.get('/api/consultas/:idUsuario', async (req, res) => {
   try {
     const idUsuario = req.params.idUsuario || req.params.id_usuario;
     const consultaSql = 
-      'SELECT id, fecha, asunto, estado, respuesta ' +
+      'SELECT id, fecha, asunto, mensaje, estado, respuesta ' +
       'FROM consultas WHERE id_usuario = $1 ORDER BY fecha DESC';
     const resultado = await pool.query(consultaSql, [idUsuario]);
     res.json(resultado.rows);
@@ -870,9 +898,32 @@ app.put('/api/certificados/actualizar-estado/:id', async (req, res) => {
       return res.status(404).json({ error: 'Solicitud no encontrada' });
     }
 
+    const solicitud = resultado.rows[0];
+
+    // Generar notificación al emitir el certificado
+    if (nuevoEstado === 'Emitido') {
+      const consultaDoc =
+        'SELECT COALESCE(c.nombre_certificado, s.grado_tipo, \'Certificado Académico\') AS nombre ' +
+        'FROM solicitudes_certificados s ' +
+        'LEFT JOIN catalogo_certificados c ON s.id_certificado = c.id ' +
+        'WHERE s.id = $1';
+      const resDoc = await pool.query(consultaDoc, [id]);
+      const nombreCert = resDoc.rows[0]?.nombre || 'Certificado Académico';
+
+      const insertNotifSql =
+        'INSERT INTO notificaciones (id_usuario, titulo, mensaje, tipo) ' +
+        'VALUES ($1, $2, $3, $4)';
+      await pool.query(insertNotifSql, [
+        solicitud.id_estudiante,
+        'Certificado Emitido',
+        `Su ${nombreCert} ha sido emitido con código ${solicitud.codigo_verificacion}.`,
+        'Informativa',
+      ]);
+    }
+
     res.json({
       success: true,
-      solicitud: resultado.rows[0],
+      solicitud: solicitud,
       message: `Estado actualizado a "${nuevoEstado}".`,
     });
   } catch (err) {

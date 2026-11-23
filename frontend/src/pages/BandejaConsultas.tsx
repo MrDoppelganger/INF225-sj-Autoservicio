@@ -107,7 +107,20 @@ export const BandejaConsultas = ({ setVista }: BandejaConsultasProps) => {
     <div className="layout-principal">
       <Header setVista={setVista || (() => {})} perfil="Administrador" />
       <main className="main-content">
-        <h2>Bandeja Centralizada de Soporte</h2>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+          <button
+            className="btn-regreso-dashboard"
+            onClick={() => (setVista ? setVista('landing') : null)}
+            aria-label="Volver al menú principal"
+            title="Volver al menú principal"
+          >
+            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+          </button>
+          <h2 style={{ margin: 0 }}>Bandeja Centralizada de Soporte</h2>
+        </div>
         <p>Priorización de solicitudes pendientes (Más antiguas primero).</p>
 
         {loading ? (

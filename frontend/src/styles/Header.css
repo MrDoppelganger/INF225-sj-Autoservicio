@@ -36,6 +36,33 @@
   letter-spacing: 0.5px;
 }
 
+/* Botón flecha de regreso al dashboard */
+.btn-regreso-dashboard {
+  background: none;
+  border: none;
+  color: #003B70;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-right: 12px;
+  vertical-align: middle;
+}
+
+.btn-regreso-dashboard:hover {
+  background-color: rgba(0, 59, 112, 0.08);
+  transform: translateX(-3px);
+}
+
+.btn-regreso-dashboard svg {
+  width: 28px;
+  height: 28px;
+  stroke: #003B70;
+}
+
 .menu-toggle {
   display: none;
   background: transparent;

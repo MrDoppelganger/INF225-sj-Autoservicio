@@ -1,0 +1,151 @@
+/* -------------------Estilos de Mis Consultas (Estudiante)------------ */
+/* Hoja de estilos institucional para la visualización del historial    */
+/* de consultas y respuestas de soporte (UTFSM).                        */
+/* -------------------------------------------------------------------- */
+
+/* Layout y Contenedor Principal */
+.consultas-main {
+  max-width: 1050px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Cabecera del Módulo */
+.consultas-header {
+  margin-bottom: 25px;
+}
+
+.consultas-header h2 {
+  color: #003B70;
+  font-size: 2rem;
+  margin: 0 0 8px 0;
+}
+
+.consultas-header p {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Contenedor de la Tabla */
+.tabla-consultas-container {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.tabla-consultas {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tabla-consultas th {
+  background-color: #003B70;
+  color: #ffffff;
+  padding: 16px 20px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tabla-consultas td {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.tabla-consultas tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla-consultas tr:hover td {
+  background-color: #f8fafc;
+}
+
+/* Fila destacada */
+.fila-pendiente {
+  background-color: #fffdf5;
+}
+
+.fila-respondida {
+  background-color: #ffffff;
+}
+
+.consulta-asunto {
+  color: #003B70;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.consulta-mensaje {
+  max-width: 300px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.consulta-respuesta {
+  max-width: 320px;
+  line-height: 1.4;
+  word-break: break-word;
+  color: #1e293b;
+}
+
+.sin-respuesta {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.consulta-fecha {
+  white-space: nowrap;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Insignias de Estado */
+.badge-estado-consulta {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-estado-consulta.pendiente {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.badge-estado-consulta.respondida {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .consultas-main {
+    padding: 20px 15px;
+  }
+
+  .tabla-consultas th,
+  .tabla-consultas td {
+    padding: 10px 8px;
+    font-size: 0.85rem;
+  }
+
+  .consulta-mensaje,
+  .consulta-respuesta {
+    max-width: 150px;
+  }
+}
