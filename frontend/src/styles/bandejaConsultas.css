@@ -8,6 +8,13 @@
   font: inherit;
   cursor: pointer;
 }
+.bandeja-soporte .ticket-ver-perfil { padding: 0; margin: 0; border: 0; background: transparent; text-align: left; text-decoration: underline; text-underline-offset: 3px; }
+.bandeja-soporte .ticket-perfil-dialogo { width: min(520px, 85vw); max-height: 80vh; overflow-y: auto; border: 0; border-radius: 10px; padding: 28px; color: #172b4d; box-shadow: 0 12px 48px #0004; }
+.ticket-perfil-dialogo::backdrop { background: #10243a99; }
+.ticket-perfil-dialogo h2 { margin-top: 0; }
+.ticket-perfil-dialogo dl { display: grid; gap: 16px; }
+.ticket-perfil-dialogo dt { font-weight: 700; color: #003b70; }
+.ticket-perfil-dialogo dd { margin: 4px 0 0; overflow-wrap: anywhere; }
 .bandeja-soporte button[aria-pressed="true"] {
   background: #003b70;
   color: white;
