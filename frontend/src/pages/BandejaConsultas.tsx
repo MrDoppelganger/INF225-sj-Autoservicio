@@ -1,217 +1,145 @@
-// -------------------Módulo de Bandeja de Consultas------------------
-// Panel administrativo para priorizar y responder solicitudes
-// Plataforma: Portal de Autoservicio Institucional (UTFSM)
-// -------------------------------------------------------------------
-
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { API_BASE_URL } from '../config';
 import { Header } from '../components/Header';
+import '../styles/bandejaConsultas.css';
 
-// ---------------------Interfaces-----------------------------------
-// Definición de las propiedades recibidas y modelo de consulta
-// -------------------------------------------------------------------
 interface BandejaConsultasProps {
-  user: {
-    id: number;
-    nombre: string;
-    perfil: string;
-  };
+  user: { id: number; nombre: string; perfil: string };
   setVista?: (v: string) => void;
 }
-
-interface ConsultaPendiente {
+interface Consulta {
   id: number;
   fecha: string;
   asunto: string;
   mensaje: string;
   nombre: string;
   correo_institucional: string;
+  estado: string;
+  respuesta: string | null;
 }
+const API = `${API_BASE_URL}/api/admin/consultas`;
 
-// ------------------Componente React-------------------
-//   BandejaConsultas:
-//       Despliega la bandeja centralizada de tickets pendientes,
-//       permitiendo al administrador responder y notificar al alumno.
-// ---------------------Props---------------------------
-//   @param {BandejaConsultasProps} props - Usuario activo y setVista.
-// ------------------Retorno----------------------------
-//   @returns {JSX.Element} Vista del panel de administración.
-// -----------------------------------------------------
 export const BandejaConsultas = ({ setVista }: BandejaConsultasProps) => {
-  const [consultas, setConsultas] = useState<ConsultaPendiente[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [consultas, setConsultas] = useState<Consulta[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [aviso, setAviso] = useState('');
+  const [filtro, setFiltro] = useState('Pendientes');
+  const [errorRespuesta, setErrorRespuesta] = useState('');
+  const campoRespuesta = useRef<HTMLTextAreaElement>(null);
   const [idAtendiendo, setIdAtendiendo] = useState<number | null>(null);
-  const [respuestaAdmin, setRespuestaAdmin] = useState<string>('');
+  const [respuestaAdmin, setRespuestaAdmin] = useState('');
+  const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/admin/consultas/pendientes`)
-      .then((res) => res.json())
-      .then((datos) => {
-        setConsultas(datos);
-        setLoading(false);
+    const controller = new AbortController();
+    fetch(API, { signal: controller.signal })
+      .then(async (res) => {
+        if (!res.ok) throw new Error('No se pudo cargar la bandeja.');
+        return res.json();
       })
-      .catch((err) => {
-        console.error('Error cargando bandeja:', err);
-        setLoading(false);
-      });
+      .then(setConsultas)
+      .catch((err: Error) => { if (err.name !== 'AbortError') setError(err.message); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, []);
 
-  // -------------------Función----------------------
-  //   enviarRespuesta:
-  //       Envía la respuesta redactada a la API, actualiza el
-  //       estado de la consulta y la remueve de la bandeja activa.
-  // ------------------Parámetros-------------------
-  //   @param {number} id - Identificador de la consulta.
-  //   @param {string} correo - Correo institucional del alumno.
-  // ------------------Retorno-----------------------
-  //   @returns {Promise<void>}
-  // -----------------------------------------------
-  const enviarRespuesta = async (id: number, correo: string): Promise<void> => {
-    if (!respuestaAdmin.trim()) return alert('La respuesta no puede estar vacía.');
-
-    const respuesta = await fetch(`${API_BASE_URL}/api/admin/consultas/responder/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ respuesta: respuestaAdmin, correo_alumno: correo }),
-    });
-
-    if (respuesta.ok) {
-      alert('Respuesta enviada y alumno notificado por correo automático.');
-      setConsultas(consultas.filter((c) => c.id !== id));
+  const enviarRespuesta = async (item: Consulta) => {
+    if (enviando) return;
+    if (!respuestaAdmin.trim()) {
+      setErrorRespuesta('Escribe una respuesta. No se permite enviar solo espacios.');
+      campoRespuesta.current?.focus();
+      return;
+    }
+    setEnviando(true);
+    setErrorRespuesta('');
+    setError('');
+    setAviso('');
+    try {
+      const res = await fetch(`${API}/responder/${item.id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ respuesta: respuestaAdmin.trim(), correo_alumno: item.correo_institucional }),
+      });
+      if (!res.ok) {
+        const datos = await res.json();
+        throw new Error(datos.error || 'No se pudo guardar la respuesta.');
+      }
+      setConsultas((prev) => prev.map((c) => c.id === item.id
+        ? { ...c, estado: 'Respondida', respuesta: respuestaAdmin.trim() } : c));
       setIdAtendiendo(null);
       setRespuestaAdmin('');
-    } else {
-      alert('Error al intentar responder la consulta.');
-    }
+      setAviso(`Respuesta del ticket #${item.id} guardada. Puedes revisarla en Respondidas y el alumno puede consultarla en su historial.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error de conexión.');
+    } finally { setEnviando(false); }
   };
 
-  // -------------------Función----------------------
-  //   formatearFecha:
-  //       Formatea la marca de tiempo a convención chilena.
-  // ------------------Parámetros-------------------
-  //   @param {string} fechaStr - Marca temporal en formato ISO.
-  // ------------------Retorno-----------------------
-  //   @returns {string} Fecha formateada 'DD/MM/AAAA, HH:MM'.
-  // -----------------------------------------------
-  const formatearFecha = (fechaStr: string): string => {
-    return new Date(fechaStr).toLocaleString('es-CL', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
+  const visibles = consultas.filter((c) => filtro === 'Todas'
+    || c.estado === (filtro === 'Pendientes' ? 'Pendiente' : 'Respondida'));
   return (
     <div className="layout-principal">
       <Header setVista={setVista || (() => {})} perfil="Administrador" />
-      <main className="main-content">
+      <main className="main-content bandeja-soporte">
         <h2>Bandeja Centralizada de Soporte</h2>
-        <p>Priorización de solicitudes pendientes (Más antiguas primero).</p>
-
-        {loading ? (
-          <div className="loader" style={{ marginTop: '20px' }}>Cargando bandeja centralizada...</div>
-        ) : (
-          <section className="consultas-container" style={{ marginTop: '20px' }}>
+        <p>Consulta todos los tickets y atiende los pendientes, más antiguos primero.</p>
+        <div role="group" aria-label="Filtrar tickets" style={{ display: 'flex', gap: 12, margin: '20px 0' }}>
+          {['Todas', 'Pendientes', 'Respondidas'].map((opcion) => (
+            <button key={opcion} aria-pressed={filtro === opcion} disabled={enviando}
+              onClick={() => { setFiltro(opcion); setIdAtendiendo(null); setRespuestaAdmin(''); setError(''); setErrorRespuesta(''); }}>
+              {opcion}
+            </button>
+          ))}
+        </div>
+        {error && <p role="alert">{error}</p>}
+        {aviso && <p role="status">{aviso}</p>}
+        {loading ? <p>Cargando bandeja...</p> : (
+          <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#003B70', color: 'white' }}>
-                  <th style={{ padding: '12px' }}>Fecha</th>
-                  <th style={{ padding: '12px' }}>Alumno</th>
-                  <th style={{ padding: '12px' }}>Correo</th>
-                  <th style={{ padding: '12px' }}>Asunto</th>
-                  <th style={{ padding: '12px' }}>Mensaje</th>
-                  <th style={{ padding: '12px' }}>Acciones</th>
+              <thead><tr>
+                {['Ticket', 'Fecha', 'Alumno', 'Correo', 'Asunto', 'Mensaje', 'Estado', 'Respuesta / acciones'].map((titulo) => <th key={titulo} style={{ padding: 12 }}>{titulo}</th>)}
+              </tr></thead>
+              <tbody>{visibles.map((item) => (
+                <tr key={item.id} style={{ borderBottom: '1px solid #ddd' }}>
+                  <td>#{item.id}</td>
+                  <td>{new Date(item.fecha).toLocaleString('es-CL')}</td>
+                  <td>{item.nombre}</td><td>{item.correo_institucional}</td>
+                  <td className="ticket-asunto">{item.asunto}</td>
+                  <td>
+                    <details className="ticket-desplegable">
+                      <summary>Ver mensaje<span className="ticket-sr-only"> del ticket #{item.id}</span></summary>
+                      <div className="ticket-texto">{item.mensaje}</div>
+                    </details>
+                  </td>
+                  <td className="ticket-estado">{item.estado}</td>
+                  <td style={{ padding: 12 }}>
+                    {item.estado === 'Respondida' ? (
+                      <details className="ticket-desplegable">
+                        <summary>Ver respuesta<span className="ticket-sr-only"> del ticket #{item.id}</span></summary>
+                        <div className="ticket-texto">{item.respuesta || 'Sin respuesta registrada.'}</div>
+                      </details>
+                    ) : idAtendiendo === item.id ? (
+                      <div>
+                        <label htmlFor={`respuesta-${item.id}`}>Respuesta al ticket #{item.id}</label>
+                        <textarea ref={campoRespuesta} id={`respuesta-${item.id}`} rows={4} value={respuestaAdmin}
+                          aria-invalid={!!errorRespuesta}
+                          aria-describedby={errorRespuesta ? `error-respuesta-${item.id}` : undefined}
+                          disabled={enviando} onChange={(e) => {
+                            setRespuestaAdmin(e.target.value);
+                            if (e.target.value.trim()) setErrorRespuesta('');
+                          }} />
+                        {errorRespuesta && <p className="respuesta-error" role="alert" id={`error-respuesta-${item.id}`}>{errorRespuesta}</p>}
+                        <button disabled={enviando} onClick={() => enviarRespuesta(item)}>{enviando ? 'Enviando...' : 'Enviar'}</button>
+                        <button disabled={enviando} onClick={() => { setIdAtendiendo(null); setRespuestaAdmin(''); setError(''); setErrorRespuesta(''); }}>Cancelar</button>
+                      </div>
+                    ) : <button disabled={enviando} onClick={() => { setIdAtendiendo(item.id); setRespuestaAdmin(''); setError(''); setErrorRespuesta(''); setAviso(''); }}>Atender</button>}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {consultas.map((item) => (
-                  <tr key={item.id} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '12px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
-                      {formatearFecha(item.fecha)}
-                    </td>
-                    <td style={{ padding: '12px' }}>{item.nombre}</td>
-                    <td style={{ padding: '12px', color: '#003B70' }}>{item.correo_institucional}</td>
-                    <td style={{ padding: '12px', fontStyle: 'italic' }}>{item.asunto}</td>
-                    <td style={{ padding: '12px', maxWidth: '300px', wordBreak: 'break-word' }}>
-                      {item.mensaje}
-                    </td>
-                    <td style={{ padding: '12px' }}>
-                      {idAtendiendo === item.id ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                          <textarea 
-                            rows={3} 
-                            placeholder="Escribe la solución..."
-                            value={respuestaAdmin}
-                            onChange={(e) => setRespuestaAdmin(e.target.value)}
-                            style={{ padding: '5px', width: '100%' }}
-                          />
-                          <div style={{ display: 'flex', gap: '5px' }}>
-                            <button 
-                              style={{
-                                flex: 1,
-                                backgroundColor: '#28a745',
-                                color: 'white',
-                                border: 'none',
-                                padding: '6px',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                              }} 
-                              onClick={() => enviarRespuesta(item.id, item.correo_institucional)}
-                            >
-                              Enviar
-                            </button>
-                            <button 
-                              style={{
-                                flex: 1,
-                                backgroundColor: '#dc3545',
-                                color: 'white',
-                                border: 'none',
-                                padding: '6px',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                              }} 
-                              onClick={() => {
-                                setIdAtendiendo(null);
-                                setRespuestaAdmin('');
-                              }}
-                            >
-                              Cancelar
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <button 
-                          onClick={() => setIdAtendiendo(item.id)}
-                          style={{
-                            backgroundColor: '#ffc107',
-                            color: 'black',
-                            border: 'none',
-                            padding: '6px 12px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            width: '100%',
-                          }}
-                        >
-                          Atender
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-                {consultas.length === 0 && (
-                  <tr>
-                    <td colSpan={6} style={{ padding: '20px', textAlign: 'center', color: '#777' }}>
-                      🎉 ¡Impecable! No registras consultas pendientes en la bandeja central.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
+              ))}{visibles.length === 0 && <tr><td colSpan={8}>{filtro === 'Pendientes' ? 'No hay consultas pendientes. Puedes revisar el historial en Todas o Respondidas.' : 'No hay tickets para este filtro.'}</td></tr>}</tbody>
             </table>
-          </section>
+          </div>
         )}
       </main>
     </div>
   );
 };
+
