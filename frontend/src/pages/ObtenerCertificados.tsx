@@ -19,7 +19,7 @@ interface ObtenerCertificadosProps {
     perfil: string;
     nombre: string;
     situacion_academica?: string;
-    anio_ingreso?: number;
+    anio_ingreso?: number | null;
     email?: string;
   };
   setVista?: (v: string) => void;
@@ -76,7 +76,7 @@ export const ObtenerCertificados = ({ user: propUser, setVista }: ObtenerCertifi
   const [tabActiva, setTabActiva] = useState<'gratis' | 'pago'>('gratis');
   const [solicitudes, setSolicitudes] = useState<SolicitudCertificadoItem[]>([]);
   const [cargandoSolicitudes, setCargandoSolicitudes] = useState<boolean>(true);
-  const [anioIngresoReal, setAnioIngresoReal] = useState<number>(2022);
+  const [anioIngresoReal, setAnioIngresoReal] = useState<number | null>(null);
   const [emailContacto, setEmailContacto] = useState<string>('estudiante.prueba@usm.cl');
 
   // Estados del formulario para Certificados Gratuitos
@@ -126,8 +126,10 @@ export const ObtenerCertificados = ({ user: propUser, setVista }: ObtenerCertifi
       .then((res) => (res.ok ? res.json() : null))
       .then((datos) => {
         if (datos) {
-          if (datos.anio_ingreso) {
+          if (datos.anio_ingreso != null) {
             setAnioIngresoReal(Number(datos.anio_ingreso));
+          } else {
+            setAnioIngresoReal(null);
           }
           if (datos.email) {
             setEmailContacto(datos.email);
@@ -174,6 +176,7 @@ export const ObtenerCertificados = ({ user: propUser, setVista }: ObtenerCertifi
   const listaSemestresDisponibles = useMemo(() => {
     const anioActual = 2026;
     const semestres: string[] = [];
+    if (anioIngresoReal === null) return semestres;
     for (let anio = anioActual; anio >= anioIngresoReal; anio--) {
       semestres.push(`${anio}-2`);
       semestres.push(`${anio}-1`);
@@ -185,6 +188,7 @@ export const ObtenerCertificados = ({ user: propUser, setVista }: ObtenerCertifi
   const listaAniosDisponibles = useMemo(() => {
     const anioActual = 2026;
     const anios: number[] = [];
+    if (anioIngresoReal === null) return anios;
     for (let anio = anioActual; anio >= anioIngresoReal; anio--) {
       anios.push(anio);
     }
@@ -590,7 +594,7 @@ export const ObtenerCertificados = ({ user: propUser, setVista }: ObtenerCertifi
                         ))}
                       </select>
                       <small className="help-text">
-                        Habilitado según año de admisión institucional ({anioIngresoReal}).
+                        {anioIngresoReal === null ? 'Año de ingreso no registrado. Solicita su actualización para seleccionar un período.' : `Habilitado según año de admisión institucional (${anioIngresoReal}).`}
                       </small>
                     </div>
 
@@ -649,7 +653,7 @@ export const ObtenerCertificados = ({ user: propUser, setVista }: ObtenerCertifi
                         ))}
                       </select>
                       <small className="help-text">
-                        Opciones válidas desde admisión ({anioIngresoReal}) hasta la fecha.
+                        {anioIngresoReal === null ? 'Año de ingreso no registrado. Solicita su actualización para seleccionar un año.' : `Opciones válidas desde admisión (${anioIngresoReal}) hasta la fecha.`}
                       </small>
                     </div>
 
